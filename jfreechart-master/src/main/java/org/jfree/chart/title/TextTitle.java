@@ -627,13 +627,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             return null;
         }
         ChartEntity entity = null;
-        if (params instanceof EntityBlockParams) {
-            EntityBlockParams p = (EntityBlockParams) params;
-            if (p.getGenerateEntities()) {
-                entity = new TitleEntity(area, this, this.toolTipText,
-                        this.urlText);
-            }
-        }
+        entity = drawRefactoring1(area, params, entity);
         area = trimBorder(area);
         if (this.backgroundPaint != null) {
             g2.setPaint(this.backgroundPaint);
@@ -656,6 +650,17 @@ public class TextTitle extends Title implements Serializable, Cloneable,
         }
         return result;
     }
+
+	public ChartEntity drawRefactoring1(Rectangle2D area, Object params, ChartEntity entity) {
+		if (params instanceof EntityBlockParams) {
+            EntityBlockParams p = (EntityBlockParams) params;
+            if (p.getGenerateEntities()) {
+                entity = new TitleEntity(area, this, this.toolTipText,
+                        this.urlText);
+            }
+        }
+		return entity;
+	}
 
     /**
      * Draws a the title horizontally within the specified area.  This method

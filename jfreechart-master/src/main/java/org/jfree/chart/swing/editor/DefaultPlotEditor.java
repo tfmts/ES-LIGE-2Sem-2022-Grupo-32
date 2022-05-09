@@ -252,7 +252,23 @@ class DefaultPlotEditor extends JPanel implements ActionListener {
         interior.add(this.backgroundPaintSample);
         interior.add(button);
 
-        if (this.plotOrientation != null) {
+        createPlotPanelRefactoring1(interior);
+
+        general.add(interior, BorderLayout.NORTH);
+
+        JPanel appearance = new JPanel(new BorderLayout());
+        appearance.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        appearance.add(general, BorderLayout.NORTH);
+
+        JTabbedPane tabs = createPlotTabs(plot);
+        tabs.add(localizationResources.getString("Appearance"), appearance);
+        panel.add(tabs);
+        
+        return panel;
+    }
+
+	public void createPlotPanelRefactoring1(JPanel interior) {
+		if (this.plotOrientation != null) {
             boolean isVertical = this.plotOrientation.equals(
                     PlotOrientation.VERTICAL);
             int index = isVertical ? ORIENTATION_VERTICAL
@@ -288,19 +304,7 @@ class DefaultPlotEditor extends JPanel implements ActionListener {
             interior.add(new JPanel());
             interior.add(this.drawShapesCheckBox);
         }
-
-        general.add(interior, BorderLayout.NORTH);
-
-        JPanel appearance = new JPanel(new BorderLayout());
-        appearance.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        appearance.add(general, BorderLayout.NORTH);
-
-        JTabbedPane tabs = createPlotTabs(plot);
-        tabs.add(localizationResources.getString("Appearance"), appearance);
-        panel.add(tabs);
-        
-        return panel;
-    }
+	}
 
     /**
      * Creates a tabbed pane for the plot.
@@ -544,67 +548,13 @@ class DefaultPlotEditor extends JPanel implements ActionListener {
         plot.setInsets(getPlotInsets());
 
         // then the axis properties...
-        if (this.domainAxisPropertyPanel != null) {
-            Axis domainAxis = null;
-            if (plot instanceof CategoryPlot) {
-                CategoryPlot p = (CategoryPlot) plot;
-                domainAxis = p.getDomainAxis();
-            }
-            else if (plot instanceof XYPlot) {
-                XYPlot p = (XYPlot) plot;
-                domainAxis = p.getDomainAxis();
-            }
-            if (domainAxis != null) {
-                this.domainAxisPropertyPanel.setAxisProperties(domainAxis);
-            }
-        }
+        updatePlotPropertiesRefactoring1(plot);
 
-        if (this.rangeAxisPropertyPanel != null) {
-            Axis rangeAxis = null;
-            if (plot instanceof CategoryPlot) {
-                CategoryPlot p = (CategoryPlot) plot;
-                rangeAxis = p.getRangeAxis();
-            }
-            else if (plot instanceof XYPlot) {
-                XYPlot p = (XYPlot) plot;
-                rangeAxis = p.getRangeAxis();
-            }
-            else if (plot instanceof PolarPlot) {
-                PolarPlot p = (PolarPlot) plot;
-                rangeAxis = p.getAxis();
-            }
-            if (rangeAxis != null) {
-                this.rangeAxisPropertyPanel.setAxisProperties(rangeAxis);
-            }
-        }
+        updatePlotPropertiesRefactoring2(plot);
 
-        if (this.plotOrientation != null) {
-            if (plot instanceof CategoryPlot) {
-                CategoryPlot p = (CategoryPlot) plot;
-                p.setOrientation(this.plotOrientation);
-            }
-            else if (plot instanceof XYPlot) {
-                XYPlot p = (XYPlot) plot;
-                p.setOrientation(this.plotOrientation);
-            }
-        }
+        updatePlotPropertiesRefactoring3(plot);
 
-        if (this.drawLines != null) {
-            if (plot instanceof CategoryPlot) {
-                CategoryPlot p = (CategoryPlot) plot;
-                CategoryItemRenderer r = p.getRenderer();
-                if (r instanceof LineAndShapeRenderer) {
-                    ((LineAndShapeRenderer) r).setDefaultLinesVisible(this.drawLines);
-                }
-            }
-            else if (plot instanceof XYPlot) {
-                XYPlot p = (XYPlot) plot;
-                XYItemRenderer r = p.getRenderer();
-                if (r instanceof StandardXYItemRenderer) {
-                    ((StandardXYItemRenderer) r).setPlotLines(this.drawLines);
-                }
-            }
-        }
+        updatePlotPropertiesRefactoring4(plot);
 
         if (this.drawShapes != null) {
             if (plot instanceof CategoryPlot) {
@@ -625,5 +575,75 @@ class DefaultPlotEditor extends JPanel implements ActionListener {
         }
 
     }
+
+	public void updatePlotPropertiesRefactoring4(Plot plot) {
+		if (this.drawLines != null) {
+            if (plot instanceof CategoryPlot) {
+                CategoryPlot p = (CategoryPlot) plot;
+                CategoryItemRenderer r = p.getRenderer();
+                if (r instanceof LineAndShapeRenderer) {
+                    ((LineAndShapeRenderer) r).setDefaultLinesVisible(this.drawLines);
+                }
+            }
+            else if (plot instanceof XYPlot) {
+                XYPlot p = (XYPlot) plot;
+                XYItemRenderer r = p.getRenderer();
+                if (r instanceof StandardXYItemRenderer) {
+                    ((StandardXYItemRenderer) r).setPlotLines(this.drawLines);
+                }
+            }
+        }
+	}
+
+	public void updatePlotPropertiesRefactoring3(Plot plot) {
+		if (this.plotOrientation != null) {
+            if (plot instanceof CategoryPlot) {
+                CategoryPlot p = (CategoryPlot) plot;
+                p.setOrientation(this.plotOrientation);
+            }
+            else if (plot instanceof XYPlot) {
+                XYPlot p = (XYPlot) plot;
+                p.setOrientation(this.plotOrientation);
+            }
+        }
+	}
+
+	public void updatePlotPropertiesRefactoring2(Plot plot) {
+		if (this.rangeAxisPropertyPanel != null) {
+            Axis rangeAxis = null;
+            if (plot instanceof CategoryPlot) {
+                CategoryPlot p = (CategoryPlot) plot;
+                rangeAxis = p.getRangeAxis();
+            }
+            else if (plot instanceof XYPlot) {
+                XYPlot p = (XYPlot) plot;
+                rangeAxis = p.getRangeAxis();
+            }
+            else if (plot instanceof PolarPlot) {
+                PolarPlot p = (PolarPlot) plot;
+                rangeAxis = p.getAxis();
+            }
+            if (rangeAxis != null) {
+                this.rangeAxisPropertyPanel.setAxisProperties(rangeAxis);
+            }
+        }
+	}
+
+	public void updatePlotPropertiesRefactoring1(Plot plot) {
+		if (this.domainAxisPropertyPanel != null) {
+            Axis domainAxis = null;
+            if (plot instanceof CategoryPlot) {
+                CategoryPlot p = (CategoryPlot) plot;
+                domainAxis = p.getDomainAxis();
+            }
+            else if (plot instanceof XYPlot) {
+                XYPlot p = (XYPlot) plot;
+                domainAxis = p.getDomainAxis();
+            }
+            if (domainAxis != null) {
+                this.domainAxisPropertyPanel.setAxisProperties(domainAxis);
+            }
+        }
+	}
 
 }

@@ -235,9 +235,8 @@ public class TextBlock implements Serializable {
             double height) {
         float[] result = new float[2];
         float xAdj = 0.0f;
-        float yAdj = 0.0f;
-
-        if (anchor == TextBlockAnchor.TOP_CENTER
+        float yAdj = calculateOffsetsRefactoring1(anchor, height);
+		if (anchor == TextBlockAnchor.TOP_CENTER
                 || anchor == TextBlockAnchor.CENTER
                 || anchor == TextBlockAnchor.BOTTOM_CENTER) {
                     
@@ -251,29 +250,25 @@ public class TextBlock implements Serializable {
             
         }
 
-        if (anchor == TextBlockAnchor.TOP_LEFT
-                || anchor == TextBlockAnchor.TOP_CENTER
-                || anchor == TextBlockAnchor.TOP_RIGHT) {
-                    
-            yAdj = 0.0f;
-            
-        } else if (anchor == TextBlockAnchor.CENTER_LEFT
-                || anchor == TextBlockAnchor.CENTER
-                || anchor == TextBlockAnchor.CENTER_RIGHT) {
-                    
-            yAdj = (float) -height / 2.0f;
-            
-        } else if (anchor == TextBlockAnchor.BOTTOM_LEFT
-                || anchor == TextBlockAnchor.BOTTOM_CENTER
-                || anchor == TextBlockAnchor.BOTTOM_RIGHT) {
-                    
-            yAdj = (float) -height;
-            
-        }
         result[0] = xAdj;
         result[1] = yAdj;
         return result;
-    }   
+    }
+
+	private float calculateOffsetsRefactoring1(TextBlockAnchor anchor, double height) {
+		float yAdj = 0.0f;
+		if (anchor == TextBlockAnchor.TOP_LEFT || anchor == TextBlockAnchor.TOP_CENTER
+				|| anchor == TextBlockAnchor.TOP_RIGHT) {
+			yAdj = 0.0f;
+		} else if (anchor == TextBlockAnchor.CENTER_LEFT || anchor == TextBlockAnchor.CENTER
+				|| anchor == TextBlockAnchor.CENTER_RIGHT) {
+			yAdj = (float) -height / 2.0f;
+		} else if (anchor == TextBlockAnchor.BOTTOM_LEFT || anchor == TextBlockAnchor.BOTTOM_CENTER
+				|| anchor == TextBlockAnchor.BOTTOM_RIGHT) {
+			yAdj = (float) -height;
+		}
+		return yAdj;
+	}   
     
     /**
      * Tests this object for equality with an arbitrary object.
