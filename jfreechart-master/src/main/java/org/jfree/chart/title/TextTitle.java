@@ -79,7 +79,11 @@ import org.jfree.data.Range;
 public class TextTitle extends Title implements Serializable, Cloneable, 
         PublicCloneable {
 
-    /** For serialization. */
+    private TextTitleRefactoring2 textTitleRefactoring2 = new TextTitleRefactoring2();
+
+	private TextTitleRefactoring1 textTitleRefactoring1 = new TextTitleRefactoring1();
+
+	/** For serialization. */
     private static final long serialVersionUID = 8372008692127477443L;
 
     /** The default font. */
@@ -95,34 +99,14 @@ public class TextTitle extends Title implements Serializable, Cloneable,
     /** The font used to display the title. */
     private Font font;
 
-    /** The text alignment. */
-    private HorizontalAlignment textAlignment;
-
     /** The paint used to display the title text. */
     private transient Paint paint;
 
     /** The background paint. */
     private transient Paint backgroundPaint;
 
-    /** The tool tip text (can be {@code null}). */
-    private String toolTipText;
-
-    /** The URL text (can be {@code null}). */
-    private String urlText;
-
     /** The content. */
     private TextBlock content;
-
-    /**
-     * A flag that controls whether the title expands to fit the available
-     * space..
-     */
-    private boolean expandToFitSpace = false;
-
-    /**
-     * The maximum number of lines to display.
-     */
-    private int maximumLinesToDisplay = Integer.MAX_VALUE;
 
     /**
      * Creates a new title, using default attributes where necessary.
@@ -182,11 +166,11 @@ public class TextTitle extends Title implements Serializable, Cloneable,
         // the textAlignment and the horizontalAlignment are separate things,
         // but it makes sense for the default textAlignment to match the
         // title's horizontal alignment...
-        this.textAlignment = horizontalAlignment;
+        textTitleRefactoring1.setTextAlignment2(horizontalAlignment);
         this.backgroundPaint = null;
         this.content = null;
-        this.toolTipText = null;
-        this.urlText = null;
+        textTitleRefactoring2.setToolTipText2(null);
+        textTitleRefactoring2.setUrlText(null);
     }
 
     /**
@@ -223,7 +207,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @return The text alignment.
      */
     public HorizontalAlignment getTextAlignment() {
-        return this.textAlignment;
+        return this.textTitleRefactoring1.getTextAlignment();
     }
 
     /**
@@ -233,9 +217,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @param alignment  the alignment ({@code null} not permitted).
      */
     public void setTextAlignment(HorizontalAlignment alignment) {
-        Args.nullNotPermitted(alignment, "alignment");
-        this.textAlignment = alignment;
-        notifyListeners(new TitleChangeEvent(this));
+        textTitleRefactoring1.setTextAlignment(alignment, this);
     }
 
     /**
@@ -320,7 +302,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @return The tool tip text (possibly {@code null}).
      */
     public String getToolTipText() {
-        return this.toolTipText;
+        return this.textTitleRefactoring2.getToolTipText();
     }
 
     /**
@@ -330,8 +312,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @param text  the text ({@code null} permitted).
      */
     public void setToolTipText(String text) {
-        this.toolTipText = text;
-        notifyListeners(new TitleChangeEvent(this));
+        textTitleRefactoring2.setToolTipText(text, this);
     }
 
     /**
@@ -340,7 +321,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @return The URL text (possibly {@code null}).
      */
     public String getURLText() {
-        return this.urlText;
+        return this.textTitleRefactoring2.getUrlText();
     }
 
     /**
@@ -350,8 +331,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @param text  the text ({@code null} permitted).
      */
     public void setURLText(String text) {
-        this.urlText = text;
-        notifyListeners(new TitleChangeEvent(this));
+        textTitleRefactoring2.setURLText(text, this);
     }
 
     /**
@@ -361,7 +341,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @return The flag.
      */
     public boolean getExpandToFitSpace() {
-        return this.expandToFitSpace;
+        return this.textTitleRefactoring1.getExpandToFitSpace();
     }
 
     /**
@@ -372,8 +352,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @param expand  the flag.
      */
     public void setExpandToFitSpace(boolean expand) {
-        this.expandToFitSpace = expand;
-        notifyListeners(new TitleChangeEvent(this));
+        textTitleRefactoring1.setExpandToFitSpace(expand, this);
     }
 
     /**
@@ -384,7 +363,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @see #setMaximumLinesToDisplay(int)
      */
     public int getMaximumLinesToDisplay() {
-        return this.maximumLinesToDisplay;
+        return this.textTitleRefactoring1.getMaximumLinesToDisplay();
     }
 
     /**
@@ -396,8 +375,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
      * @see #getMaximumLinesToDisplay()
      */
     public void setMaximumLinesToDisplay(int max) {
-        this.maximumLinesToDisplay = max;
-        notifyListeners(new TitleChangeEvent(this));
+        textTitleRefactoring1.setMaximumLinesToDisplay(max, this);
     }
 
     /**
@@ -486,11 +464,11 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             float maxWidth = (float) w;
             g2.setFont(this.font);
             this.content = TextUtils.createTextBlock(this.text, this.font,
-                    this.paint, maxWidth, this.maximumLinesToDisplay,
+                    this.paint, maxWidth, this.textTitleRefactoring1.getMaximumLinesToDisplay(),
                     new G2TextMeasurer(g2));
-            this.content.setLineAlignment(this.textAlignment);
+            this.content.setLineAlignment(this.textTitleRefactoring1.getTextAlignment());
             Size2D contentSize = this.content.calculateDimensions(g2);
-            if (this.expandToFitSpace) {
+            if (this.textTitleRefactoring1.getExpandToFitSpace()) {
                 return new Size2D(maxWidth, contentSize.getHeight());
             }
             else {
@@ -502,13 +480,13 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             float maxWidth = Float.MAX_VALUE;
             g2.setFont(this.font);
             this.content = TextUtils.createTextBlock(this.text, this.font,
-                    this.paint, maxWidth, this.maximumLinesToDisplay,
+                    this.paint, maxWidth, this.textTitleRefactoring1.getMaximumLinesToDisplay(),
                     new G2TextMeasurer(g2));
-            this.content.setLineAlignment(this.textAlignment);
+            this.content.setLineAlignment(this.textTitleRefactoring1.getTextAlignment());
             Size2D contentSize = this.content.calculateDimensions(g2);
 
             // transpose the dimensions, because the title is rotated
-            if (this.expandToFitSpace) {
+            if (this.textTitleRefactoring1.getExpandToFitSpace()) {
                 return new Size2D(contentSize.getHeight(), maxWidth);
             }
             else {
@@ -558,11 +536,11 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             float maxWidth = (float) widthRange.getUpperBound();
             g2.setFont(this.font);
             this.content = TextUtils.createTextBlock(this.text, this.font,
-                    this.paint, maxWidth, this.maximumLinesToDisplay,
+                    this.paint, maxWidth, this.textTitleRefactoring1.getMaximumLinesToDisplay(),
                     new G2TextMeasurer(g2));
-            this.content.setLineAlignment(this.textAlignment);
+            this.content.setLineAlignment(this.textTitleRefactoring1.getTextAlignment());
             Size2D contentSize = this.content.calculateDimensions(g2);
-            if (this.expandToFitSpace) {
+            if (this.textTitleRefactoring1.getExpandToFitSpace()) {
                 return new Size2D(maxWidth, contentSize.getHeight());
             }
             else {
@@ -574,13 +552,13 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             float maxWidth = (float) heightRange.getUpperBound();
             g2.setFont(this.font);
             this.content = TextUtils.createTextBlock(this.text, this.font,
-                    this.paint, maxWidth, this.maximumLinesToDisplay,
+                    this.paint, maxWidth, this.textTitleRefactoring1.getMaximumLinesToDisplay(),
                     new G2TextMeasurer(g2));
-            this.content.setLineAlignment(this.textAlignment);
+            this.content.setLineAlignment(this.textTitleRefactoring1.getTextAlignment());
             Size2D contentSize = this.content.calculateDimensions(g2);
 
             // transpose the dimensions, because the title is rotated
-            if (this.expandToFitSpace) {
+            if (this.textTitleRefactoring1.getExpandToFitSpace()) {
                 return new Size2D(contentSize.getHeight(), maxWidth);
             }
             else {
@@ -627,7 +605,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
             return null;
         }
         ChartEntity entity = null;
-        entity = drawRefactoring1(area, params, entity);
+        entity = textTitleRefactoring2.drawRefactoring1(area, params, entity, this);
         area = trimBorder(area);
         if (this.backgroundPaint != null) {
             g2.setPaint(this.backgroundPaint);
@@ -652,14 +630,7 @@ public class TextTitle extends Title implements Serializable, Cloneable,
     }
 
 	public ChartEntity drawRefactoring1(Rectangle2D area, Object params, ChartEntity entity) {
-		if (params instanceof EntityBlockParams) {
-            EntityBlockParams p = (EntityBlockParams) params;
-            if (p.getGenerateEntities()) {
-                entity = new TitleEntity(area, this, this.toolTipText,
-                        this.urlText);
-            }
-        }
-		return entity;
+		return textTitleRefactoring2.drawRefactoring1(area, params, entity, this);
 	}
 
     /**
@@ -781,22 +752,22 @@ public class TextTitle extends Title implements Serializable, Cloneable,
         if (!PaintUtils.equal(this.paint, that.paint)) {
             return false;
         }
-        if (this.textAlignment != that.textAlignment) {
+        if (this.textTitleRefactoring1.getTextAlignment() != that.textTitleRefactoring1.getTextAlignment()) {
             return false;
         }
         if (!PaintUtils.equal(this.backgroundPaint, that.backgroundPaint)) {
             return false;
         }
-        if (this.maximumLinesToDisplay != that.maximumLinesToDisplay) {
+        if (this.textTitleRefactoring1.getMaximumLinesToDisplay() != that.textTitleRefactoring1.getMaximumLinesToDisplay()) {
             return false;
         }
-        if (this.expandToFitSpace != that.expandToFitSpace) {
+        if (this.textTitleRefactoring1.getExpandToFitSpace() != that.textTitleRefactoring1.getExpandToFitSpace()) {
             return false;
         }
-        if (!Objects.equals(this.toolTipText, that.toolTipText)) {
+        if (!Objects.equals(this.textTitleRefactoring2.getToolTipText(), that.textTitleRefactoring2.getToolTipText())) {
             return false;
         }
-        if (!Objects.equals(this.urlText, that.urlText)) {
+        if (!Objects.equals(this.textTitleRefactoring2.getUrlText(), that.textTitleRefactoring2.getUrlText())) {
             return false;
         }
         return super.equals(obj);

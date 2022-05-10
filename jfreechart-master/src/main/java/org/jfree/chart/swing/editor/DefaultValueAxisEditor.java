@@ -62,13 +62,14 @@ import org.jfree.chart.axis.ValueAxis;
 class DefaultValueAxisEditor extends DefaultAxisEditor
     implements FocusListener {
 
-    /** A flag that indicates whether or not the axis range is determined
+    private DefaultValueAxisEditorRefactoring2 defaultValueAxisEditorRefactoring2;
+
+	private DefaultValueAxisEditorRefactoring1 defaultValueAxisEditorRefactoring1 = new DefaultValueAxisEditorRefactoring1();
+
+	/** A flag that indicates whether or not the axis range is determined
      *  automatically.
      */
     private boolean autoRange;
-
-    /** Flag if auto-tickunit-selection is enabled. */
-    private boolean autoTickUnitSelection;
 
     /** The lowest value in the axis range. */
     private double minimumValue;
@@ -81,9 +82,6 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      */
     private final JCheckBox autoRangeCheckBox;
 
-    /** A check-box enabling/disabling auto-tickunit-selection. */
-    private JCheckBox autoTickUnitSelectionCheckBox;
-
     /** A text field for entering the minimum value in the axis range. */
     private final JTextField minimumRangeValue;
 
@@ -92,14 +90,6 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
 
     /** The paint selected for drawing the gridlines. */
     private final PaintSample gridPaintSample;
-
-    /** The stroke selected for drawing the gridlines. */
-    private final StrokeSample gridStrokeSample;
-
-    /** An array of stroke samples to choose from (since I haven't written a
-     *  decent StrokeChooser component yet).
-     */
-    private final StrokeSample[] availableStrokeSamples;
 
     /** The resourceBundle for the localization. */
     protected static ResourceBundle localizationResources
@@ -117,17 +107,16 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
         this.autoRange = axis.isAutoRange();
         this.minimumValue = axis.getLowerBound();
         this.maximumValue = axis.getUpperBound();
-        this.autoTickUnitSelection = axis.isAutoTickUnitSelection();
+        defaultValueAxisEditorRefactoring1.setAutoTickUnitSelection(axis.isAutoTickUnitSelection());
 
         this.gridPaintSample = new PaintSample(Color.BLUE);
-        this.gridStrokeSample = new StrokeSample(new BasicStroke(1.0f));
-
-        this.availableStrokeSamples = new StrokeSample[3];
-        this.availableStrokeSamples[0] = new StrokeSample(
+		this.defaultValueAxisEditorRefactoring2 = new DefaultValueAxisEditorRefactoring2(
+				new StrokeSample(new BasicStroke(1.0f)));
+        this.defaultValueAxisEditorRefactoring2.getAvailableStrokeSamples()[0] = new StrokeSample(
                 new BasicStroke(1.0f));
-        this.availableStrokeSamples[1] = new StrokeSample(
+        this.defaultValueAxisEditorRefactoring2.getAvailableStrokeSamples()[1] = new StrokeSample(
                 new BasicStroke(2.0f));
-        this.availableStrokeSamples[2] = new StrokeSample(
+        this.defaultValueAxisEditorRefactoring2.getAvailableStrokeSamples()[2] = new StrokeSample(
                 new BasicStroke(3.0f));
 
         JTabbedPane other = getOtherTabs();
@@ -168,7 +157,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
         other.add(localizationResources.getString("Range"), range);
 
         other.add(localizationResources.getString("TickUnit"),
-                createTickUnitPanel());
+                defaultValueAxisEditorRefactoring1.createTickUnitPanel(this));
     }
 
     /**
@@ -177,19 +166,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * @return A panel. 
      */
     protected JPanel createTickUnitPanel() {
-        JPanel tickUnitPanel = new JPanel(new LCBLayout(3));
-        tickUnitPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
-        tickUnitPanel.add(new JPanel());
-        this.autoTickUnitSelectionCheckBox = new JCheckBox(
-                localizationResources.getString("Auto-TickUnit_Selection"),
-                this.autoTickUnitSelection);
-        this.autoTickUnitSelectionCheckBox.setActionCommand("AutoTickOnOff");
-        this.autoTickUnitSelectionCheckBox.addActionListener(this);
-        tickUnitPanel.add(this.autoTickUnitSelectionCheckBox);
-        tickUnitPanel.add(new JPanel());
-
-        return tickUnitPanel;
+        return defaultValueAxisEditorRefactoring1.createTickUnitPanel(this);
     }
 
     /**
@@ -198,7 +175,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * @return The value of the flag for enabling auto-tickunit-selection.
      */
     protected boolean isAutoTickUnitSelection() {
-        return autoTickUnitSelection;
+        return defaultValueAxisEditorRefactoring1.getAutoTickUnitSelection();
     }
 
     /**
@@ -206,7 +183,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * @param autoTickUnitSelection The new value for auto-tickunit-selection.
      */
     protected void setAutoTickUnitSelection(boolean autoTickUnitSelection) {
-        this.autoTickUnitSelection = autoTickUnitSelection;
+        defaultValueAxisEditorRefactoring1.setAutoTickUnitSelection(autoTickUnitSelection);
     }
 
     /**
@@ -215,7 +192,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * @return The checkbox.
      */
     protected JCheckBox getAutoTickUnitSelectionCheckBox() {
-        return autoTickUnitSelectionCheckBox;
+        return defaultValueAxisEditorRefactoring1.getAutoTickUnitSelectionCheckBox();
     }
 
     /**
@@ -225,7 +202,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      */
     protected void setAutoTickUnitSelectionCheckBox(
             JCheckBox autoTickUnitSelectionCheckBox) {
-        this.autoTickUnitSelectionCheckBox = autoTickUnitSelectionCheckBox;
+        defaultValueAxisEditorRefactoring1.setAutoTickUnitSelectionCheckBox(autoTickUnitSelectionCheckBox);
     }
 
     /**
@@ -263,7 +240,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
         if (command.equals("GridStroke")) {
-            attemptGridStrokeSelection();
+            defaultValueAxisEditorRefactoring2.attemptGridStrokeSelection(this);
         }
         else if (command.equals("GridPaint")) {
             attemptGridPaintSelection();
@@ -278,7 +255,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
             validateMaximum();
         }
         else if (command.equals("AutoTickOnOff")) {
-            toggleAutoTick();
+            defaultValueAxisEditorRefactoring1.toggleAutoTick();
         }
         else {
             // pass to the super-class for handling
@@ -290,15 +267,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * Handle a grid stroke selection.
      */
     protected void attemptGridStrokeSelection() {
-        StrokeChooserPanel panel = new StrokeChooserPanel(this.gridStrokeSample,
-                this.availableStrokeSamples);
-        int result = JOptionPane.showConfirmDialog(this, panel,
-                localizationResources.getString("Stroke_Selection"),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            this.gridStrokeSample.setStroke(panel.getSelectedStroke());
-        }
+        defaultValueAxisEditorRefactoring2.attemptGridStrokeSelection(this);
     }
 
     /**
@@ -359,7 +328,7 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
      * Sets the auto-tick unit selection field to the value in the check box.
      */
     public void toggleAutoTick() {
-        this.autoTickUnitSelection = this.autoTickUnitSelectionCheckBox.isSelected();
+        defaultValueAxisEditorRefactoring1.toggleAutoTick();
     }
 
     /**
@@ -414,6 +383,6 @@ class DefaultValueAxisEditor extends DefaultAxisEditor
         if (!this.autoRange) {
             valueAxis.setRange(this.minimumValue, this.maximumValue);
         }
-        valueAxis.setAutoTickUnitSelection(this.autoTickUnitSelection);
+        valueAxis.setAutoTickUnitSelection(this.defaultValueAxisEditorRefactoring1.getAutoTickUnitSelection());
     }
 }

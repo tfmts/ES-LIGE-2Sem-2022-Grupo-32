@@ -63,7 +63,9 @@ import org.jfree.chart.title.Title;
  */
 class DefaultTitleEditor extends JPanel implements ActionListener {
 
-    /** Whether or not to display the title on the chart. */
+    private DefaultTitleEditorRefactoring1 defaultTitleEditorRefactoring1;
+
+	/** Whether or not to display the title on the chart. */
     private boolean showTitle;
 
     /** The checkbox to indicate whether or not to display the title. */
@@ -71,12 +73,6 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
 
     /** A field for displaying/editing the title text. */
     private final JTextField titleField;
-
-    /** The font used to draw the title. */
-    private Font titleFont;
-
-    /** A field for displaying a description of the title font. */
-    private final JTextField fontfield;
 
     /** The button to use to select a new title font. */
     private final JButton selectFontButton;
@@ -102,7 +98,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
         TextTitle t = (title != null ? (TextTitle) title
                 : new TextTitle(localizationResources.getString("Title")));
         this.showTitle = (title != null);
-        this.titleFont = t.getFont();
+        defaultTitleEditorRefactoring1.setTitleFont(t.getFont());
         this.titleField = new JTextField(t.getText());
         this.titlePaint = new PaintSample(t.getPaint());
 
@@ -133,14 +129,14 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
         interior.add(new JPanel());
 
         JLabel fontLabel = new JLabel(localizationResources.getString("Font"));
-        this.fontfield = new FontDisplayField(this.titleFont);
+		this.defaultTitleEditorRefactoring1 = new DefaultTitleEditorRefactoring1(new FontDisplayField(this.getTitleFont()));
         this.selectFontButton = new JButton(
             localizationResources.getString("Select...")
         );
         this.selectFontButton.setActionCommand("SelectFont");
         this.selectFontButton.addActionListener(this);
         interior.add(fontLabel);
-        interior.add(this.fontfield);
+        interior.add(this.defaultTitleEditorRefactoring1.getFontfield());
         interior.add(this.selectFontButton);
 
         JLabel colorLabel = new JLabel(
@@ -176,7 +172,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
      * @return The font selected in the panel.
      */
     public Font getTitleFont() {
-        return this.titleFont;
+        return this.defaultTitleEditorRefactoring1.getTitleFont();
     }
 
     /**
@@ -200,7 +196,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
         String command = event.getActionCommand();
 
         if (command.equals("SelectFont")) {
-            attemptFontSelection();
+            defaultTitleEditorRefactoring1.attemptFontSelection(this);
         }
         else if (command.equals("SelectPaint")) {
             attemptPaintSelection();
@@ -215,19 +211,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
      */
     public void attemptFontSelection() {
 
-        FontChooserPanel panel = new FontChooserPanel(this.titleFont);
-        int result =
-            JOptionPane.showConfirmDialog(
-                this, panel, localizationResources.getString("Font_Selection"),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
-            );
-
-        if (result == JOptionPane.OK_OPTION) {
-            this.titleFont = panel.getSelectedFont();
-            this.fontfield.setText(
-                this.titleFont.getFontName() + " " + this.titleFont.getSize()
-            );
-        }
+        defaultTitleEditorRefactoring1.attemptFontSelection(this);
     }
 
     /**
