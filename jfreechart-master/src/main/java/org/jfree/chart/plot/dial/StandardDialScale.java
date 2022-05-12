@@ -732,17 +732,12 @@ public class StandardDialScale extends AbstractDialLayer implements DialScale,
     public void draw(Graphics2D g2, DialPlot plot, Rectangle2D frame,
             Rectangle2D view) {
 
-        Rectangle2D arcRect = DialPlot.rectangleByRadius(frame,
+        Rectangle2D arcRectMinor = arcRectMinor(frame);
+		Rectangle2D arcRect = DialPlot.rectangleByRadius(frame,
                 this.tickRadius, this.tickRadius);
         Rectangle2D arcRectMajor = DialPlot.rectangleByRadius(frame,
                 this.tickRadius - this.majorTickLength,
                 this.tickRadius - this.majorTickLength);
-        Rectangle2D arcRectMinor = arcRect;
-        if (this.minorTickCount > 0 && this.minorTickLength > 0.0) {
-            arcRectMinor = DialPlot.rectangleByRadius(frame,
-                    this.tickRadius - this.minorTickLength,
-                    this.tickRadius - this.minorTickLength);
-        }
         Rectangle2D arcRectForLabels = DialPlot.rectangleByRadius(frame,
                 this.tickRadius - this.tickLabelOffset,
                 this.tickRadius - this.tickLabelOffset);
@@ -805,6 +800,16 @@ public class StandardDialScale extends AbstractDialLayer implements DialScale,
 
         }
     }
+
+	private Rectangle2D arcRectMinor(Rectangle2D frame) {
+		Rectangle2D arcRect = DialPlot.rectangleByRadius(frame, this.tickRadius, this.tickRadius);
+		Rectangle2D arcRectMinor = arcRect;
+		if (this.minorTickCount > 0 && this.minorTickLength > 0.0) {
+			arcRectMinor = DialPlot.rectangleByRadius(frame, this.tickRadius - this.minorTickLength,
+					this.tickRadius - this.minorTickLength);
+		}
+		return arcRectMinor;
+	}
 
     /**
      * Converts a data value to an angle against this scale.

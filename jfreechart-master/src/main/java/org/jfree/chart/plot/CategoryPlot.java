@@ -113,7 +113,7 @@ import org.jfree.data.general.DatasetUtils;
  * A general plotting class that uses data from a {@link CategoryDataset} and
  * renders each data item using a {@link CategoryItemRenderer}.
  */
-public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>> 
+public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         extends Plot implements ValueAxisPlot, Pannable,
         Zoomable, AnnotationChangeListener, RendererChangeListener,
         Cloneable, PublicCloneable, Serializable {
@@ -192,15 +192,15 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /** Storage for the datasets. */
     private Map<Integer, CategoryDataset<R, C>> datasets;
 
-    /** 
+    /**
      * Storage for keys that map each dataset to one or more domain axes.
      * Typically a dataset is rendered using the scale of a single axis, but
      * a dataset can contribute to the "auto-range" of any number of axes.
      */
     private TreeMap<Integer, List<Integer>> datasetToDomainAxesMap;
 
-    /** 
-     * Storage for keys that map each dataset to one or more range axes. 
+    /**
+     * Storage for keys that map each dataset to one or more range axes.
      * Typically a dataset is rendered using the scale of a single axis, but
      * a dataset can contribute to the "auto-range" of any number of axes.
      */
@@ -589,16 +589,16 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /**
      * Returns a map containing the domain axes that are assigned to this plot.
      * The map is unmodifiable.
-     * 
-     * @return A map containing the domain axes that are assigned to the plot 
+     *
+     * @return A map containing the domain axes that are assigned to the plot
      *     (never {@code null}).
-     * 
+     *
      * @since 1.5.4
      */
     public Map<Integer, CategoryAxis> getDomainAxes() {
         return Collections.unmodifiableMap(this.domainAxes);
     }
-    
+   
     /**
      * Sets the domain axis for the plot and sends a {@link PlotChangeEvent} to
      * all registered listeners.
@@ -874,10 +874,10 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /**
      * Returns a map containing the range axes that are assigned to this plot.
      * The map is unmodifiable.
-     * 
-     * @return A map containing the domain axes that are assigned to the plot 
+     *
+     * @return A map containing the domain axes that are assigned to the plot
      *     (never {@code null}).
-     * 
+     *
      * @since 1.5.4
      */
     public Map<Integer, ValueAxis> getRangeAxes() {
@@ -979,7 +979,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         }
         return -1;
     }
-    
+   
     /**
      * Returns the range axis location.
      *
@@ -1153,10 +1153,10 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /**
      * Returns a map containing the datasets that are assigned to this plot.
      * The map is unmodifiable.
-     * 
-     * @return A map containing the datasets that are assigned to the plot 
+     *
+     * @return A map containing the datasets that are assigned to the plot
      *     (never {@code null}).
-     * 
+     *
      * @since 1.5.4
      */
     public Map<Integer, CategoryDataset> getDatasets() {
@@ -1402,10 +1402,10 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /**
      * Returns a map containing the renderers that are assigned to this plot.
      * The map is unmodifiable.
-     * 
-     * @return A map containing the renderers that are assigned to the plot 
+     *
+     * @return A map containing the renderers that are assigned to the plot
      *     (never {@code null}).
-     * 
+     *
      * @since 1.5.4
      */
     public Map<Integer, CategoryItemRenderer> getRenderers() {
@@ -1426,7 +1426,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
 
     /**
      * Sets the renderer at index 0 (sometimes referred to as the "primary"
-     * renderer) and, if requested, sends a change event to all registered 
+     * renderer) and, if requested, sends a change event to all registered
      * listeners.
      * <p>
      * You can set the renderer to {@code null}, but this is not
@@ -1463,8 +1463,8 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
 
     /**
      * Sets the renderer to use for the dataset with the specified index and,
-     * if requested, sends a change event to all registered listeners.  Note 
-     * that each dataset should have its own renderer, you should not use one 
+     * if requested, sends a change event to all registered listeners.  Note
+     * that each dataset should have its own renderer, you should not use one
      * renderer for multiple datasets.
      *
      * @param index  the index.
@@ -1516,7 +1516,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         int datasetIndex = indexOf(dataset);
         if (datasetIndex < 0) {
             return null;
-        } 
+        }
         CategoryItemRenderer renderer = this.renderers.get(datasetIndex);
         if (renderer == null) {
             return getRenderer();
@@ -1533,7 +1533,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
      * @return The renderer index.
      */
     public int getIndexOf(CategoryItemRenderer renderer) {
-        for (Entry<Integer, CategoryItemRenderer> entry 
+        for (Entry<Integer, CategoryItemRenderer> entry
                 : this.renderers.entrySet()) {
             if (entry.getValue() == renderer) {
                 return entry.getKey();
@@ -3198,7 +3198,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
      *
      * @return The space required for the axes.
      */
-    protected AxisSpace calculateAxisSpace(Graphics2D g2, 
+    protected AxisSpace calculateAxisSpace(Graphics2D g2,
             Rectangle2D plotArea) {
         AxisSpace space = new AxisSpace();
         space = calculateRangeAxisSpace(g2, plotArea, space);
@@ -3209,7 +3209,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
     /**
      * Receives a chart element visitor.  Many plot subclasses will override
      * this method to handle their subcomponents.
-     * 
+     *
      * @param visitor  the visitor ({@code null} not permitted).
      */
     @Override
@@ -3270,9 +3270,8 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
             // the plot area, since that is used later by the axes
             state = new PlotRenderingInfo(null);
         }
-        state.setPlotArea(area);
-
-        // adjust the drawing area for the plot insets (if any)...
+        AxisState rangeAxisState = rangeAxisState(g2, area, parentState, state);
+		// adjust the drawing area for the plot insets (if any)...
         RectangleInsets insets = getInsets();
         insets.trim(area);
 
@@ -3284,7 +3283,6 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         if (dataArea.isEmpty()) {
             return;
         }
-        state.setDataArea(dataArea);
         createAndAddEntity((Rectangle2D) dataArea.clone(), state, null, null);
 
         // if there is a renderer, it draws the background, otherwise use the
@@ -3294,8 +3292,6 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         } else {
             drawBackground(g2, dataArea);
         }
-
-        Map<Axis, AxisState> axisStateMap = drawAxes(g2, area, dataArea, state);
 
         // the anchor point is typically the point where the mouse last
         // clicked - the crosshairs will be driven off this point...
@@ -3315,16 +3311,8 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         if (anchor != null) {
             ValueAxis rangeAxis = getRangeAxis();
             if (rangeAxis != null) {
-                double y;
-                if (getOrientation() == PlotOrientation.VERTICAL) {
-                    y = rangeAxis.java2DToValue(anchor.getY(), dataArea,
-                            getRangeAxisEdge());
-                }
-                else {
-                    y = rangeAxis.java2DToValue(anchor.getX(), dataArea,
-                            getRangeAxisEdge());
-                }
-                crosshairState.setAnchorY(y);
+                double y = y(anchor, dataArea, rangeAxis);
+				crosshairState.setAnchorY(y);
             }
         }
         crosshairState.setRowKey(getDomainCrosshairRowKey());
@@ -3337,13 +3325,6 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
 
         drawDomainGridlines(g2, dataArea);
 
-        AxisState rangeAxisState = axisStateMap.get(getRangeAxis());
-        if (rangeAxisState == null) {
-            if (parentState != null) {
-                rangeAxisState = parentState.getSharedAxisStates()
-                        .get(getRangeAxis());
-            }
-        }
         if (rangeAxisState != null) {
             drawRangeGridlines(g2, dataArea, rangeAxisState.getTicks());
             drawZeroRangeBaseline(g2, dataArea);
@@ -3435,14 +3416,8 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         ValueAxis yAxis = getRangeAxisForDataset(datasetIndex);
         RectangleEdge yAxisEdge = getRangeAxisEdge();
         if (!this.rangeCrosshairLockedOnData && anchor != null) {
-            double yy;
-            if (getOrientation() == PlotOrientation.VERTICAL) {
-                yy = yAxis.java2DToValue(anchor.getY(), dataArea, yAxisEdge);
-            }
-            else {
-                yy = yAxis.java2DToValue(anchor.getX(), dataArea, yAxisEdge);
-            }
-            crosshairState.setCrosshairY(yy);
+            double yy = yy(anchor, dataArea, yAxis, yAxisEdge);
+			crosshairState.setCrosshairY(yy);
         }
         setRangeCrosshairValue(crosshairState.getCrosshairY(), false);
         if (isRangeCrosshairVisible()) {
@@ -3465,16 +3440,52 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
 
     }
 
+	private double y(Point2D anchor, Rectangle2D dataArea, ValueAxis rangeAxis) {
+		double y;
+		if (getOrientation() == PlotOrientation.VERTICAL) {
+			y = rangeAxis.java2DToValue(anchor.getY(), dataArea, getRangeAxisEdge());
+		} else {
+			y = rangeAxis.java2DToValue(anchor.getX(), dataArea, getRangeAxisEdge());
+		}
+		return y;
+	}
+
+	private double yy(Point2D anchor, Rectangle2D dataArea, ValueAxis yAxis, RectangleEdge yAxisEdge) {
+		double yy;
+		if (getOrientation() == PlotOrientation.VERTICAL) {
+			yy = yAxis.java2DToValue(anchor.getY(), dataArea, yAxisEdge);
+		} else {
+			yy = yAxis.java2DToValue(anchor.getX(), dataArea, yAxisEdge);
+		}
+		return yy;
+	}
+
+	private AxisState rangeAxisState(Graphics2D g2, Rectangle2D area, PlotState parentState, PlotRenderingInfo state) {
+		state.setPlotArea(area);
+		AxisSpace space = calculateAxisSpace(g2, area);
+		Rectangle2D dataArea = space.shrink(area, null);
+		dataArea = integerise(dataArea);
+		state.setDataArea(dataArea);
+		Map<Axis, AxisState> axisStateMap = drawAxes(g2, area, dataArea, state);
+		AxisState rangeAxisState = axisStateMap.get(getRangeAxis());
+		if (rangeAxisState == null) {
+			if (parentState != null) {
+				rangeAxisState = parentState.getSharedAxisStates().get(getRangeAxis());
+			}
+		}
+		return rangeAxisState;
+	}
+
     /**
      * Returns the indices of the non-null datasets in the specified order.
-     * 
+     *
      * @param order  the order ({@code null} not permitted).
-     * 
-     * @return The list of indices. 
+     *
+     * @return The list of indices.
      */
     private List<Integer> getDatasetIndices(DatasetRenderingOrder order) {
         List<Integer> result = new ArrayList<>();
-        for (Map.Entry<Integer, CategoryDataset<R, C>> entry : 
+        for (Map.Entry<Integer, CategoryDataset<R, C>> entry :
                 this.datasets.entrySet()) {
             if (entry.getValue() != null) {
                 result.add(entry.getKey());
@@ -3486,18 +3497,18 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         }
         return result;
     }
-    
+   
     /**
-     * Returns the indices of the non-null renderers for the plot, in the 
+     * Returns the indices of the non-null renderers for the plot, in the
      * specified order.
-     * 
+     *
      * @param order  the rendering order {@code null} not permitted).
-     * 
+     *
      * @return A list of indices.
      */
     private List<Integer> getRendererIndices(DatasetRenderingOrder order) {
         List<Integer> result = new ArrayList<>();
-        for (Map.Entry<Integer, CategoryItemRenderer> entry: 
+        for (Map.Entry<Integer, CategoryItemRenderer> entry:
                 this.renderers.entrySet()) {
             if (entry.getValue() != null) {
                 result.add(entry.getKey());
@@ -3509,7 +3520,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         }
         return result;        
     }
-    
+   
     /**
      * Draws the plot background (the background color and/or image).
      * <P>
@@ -3537,7 +3548,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
      *
      * @return A map containing the axis states.
      */
-    protected Map<Axis, AxisState> drawAxes(Graphics2D g2, Rectangle2D plotArea, 
+    protected Map<Axis, AxisState> drawAxes(Graphics2D g2, Rectangle2D plotArea,
             Rectangle2D dataArea, PlotRenderingInfo plotState) {
 
         AxisCollection axisCollection = new AxisCollection();
@@ -3635,54 +3646,55 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         if (hasData && renderer != null) {
 
             foundData = true;
-            CategoryItemRendererState state = renderer.initialise(g2, dataArea,
-                    this, index, info);
-            state.setCrosshairState(crosshairState);
-            int columnCount = currentDataset.getColumnCount();
-            int rowCount = currentDataset.getRowCount();
-            int passCount = renderer.getPassCount();
-            for (int pass = 0; pass < passCount; pass++) {
-                if (this.columnRenderingOrder == SortOrder.ASCENDING) {
-                    for (int column = 0; column < columnCount; column++) {
-                        if (this.rowRenderingOrder == SortOrder.ASCENDING) {
-                            for (int row = 0; row < rowCount; row++) {
-                                renderer.drawItem(g2, state, dataArea, this,
-                                        domainAxis, rangeAxis, currentDataset,
-                                        row, column, pass);
-                            }
-                        }
-                        else {
-                            for (int row = rowCount - 1; row >= 0; row--) {
-                                renderer.drawItem(g2, state, dataArea, this,
-                                        domainAxis, rangeAxis, currentDataset,
-                                        row, column, pass);
-                            }
-                        }
-                    }
-                }
-                else {
-                    for (int column = columnCount - 1; column >= 0; column--) {
-                        if (this.rowRenderingOrder == SortOrder.ASCENDING) {
-                            for (int row = 0; row < rowCount; row++) {
-                                renderer.drawItem(g2, state, dataArea, this,
-                                        domainAxis, rangeAxis, currentDataset,
-                                        row, column, pass);
-                            }
-                        }
-                        else {
-                            for (int row = rowCount - 1; row >= 0; row--) {
-                                renderer.drawItem(g2, state, dataArea, this,
-                                        domainAxis, rangeAxis, currentDataset,
-                                        row, column, pass);
-                            }
-                        }
-                    }
-                }
-            }
+            CategoryItemRendererState state = state(g2, dataArea, index, info, crosshairState, currentDataset, renderer,
+					domainAxis, rangeAxis);
         }
         return foundData;
 
     }
+
+	private <R extends Comparable<R>, C extends Comparable<C>> CategoryItemRendererState state(Graphics2D g2,
+			Rectangle2D dataArea, int index, PlotRenderingInfo info, CategoryCrosshairState<R, C> crosshairState,
+			CategoryDataset<R, C> currentDataset, CategoryItemRenderer renderer, CategoryAxis domainAxis,
+			ValueAxis rangeAxis) {
+		CategoryItemRendererState state = renderer.initialise(g2, dataArea, this, index, info);
+		state.setCrosshairState(crosshairState);
+		int columnCount = currentDataset.getColumnCount();
+		int rowCount = currentDataset.getRowCount();
+		int passCount = renderer.getPassCount();
+		for (int pass = 0; pass < passCount; pass++) {
+			if (this.columnRenderingOrder == SortOrder.ASCENDING) {
+				for (int column = 0; column < columnCount; column++) {
+					if (this.rowRenderingOrder == SortOrder.ASCENDING) {
+						for (int row = 0; row < rowCount; row++) {
+							renderer.drawItem(g2, state, dataArea, this, domainAxis, rangeAxis, currentDataset, row,
+									column, pass);
+						}
+					} else {
+						for (int row = rowCount - 1; row >= 0; row--) {
+							renderer.drawItem(g2, state, dataArea, this, domainAxis, rangeAxis, currentDataset, row,
+									column, pass);
+						}
+					}
+				}
+			} else {
+				for (int column = columnCount - 1; column >= 0; column--) {
+					if (this.rowRenderingOrder == SortOrder.ASCENDING) {
+						for (int row = 0; row < rowCount; row++) {
+							renderer.drawItem(g2, state, dataArea, this, domainAxis, rangeAxis, currentDataset, row,
+									column, pass);
+						}
+					} else {
+						for (int row = rowCount - 1; row >= 0; row--) {
+							renderer.drawItem(g2, state, dataArea, this, domainAxis, rangeAxis, currentDataset, row,
+									column, pass);
+						}
+					}
+				}
+			}
+		}
+		return state;
+	}
 
     /**
      * Draws the domain gridlines for the plot, if they are visible.
@@ -4494,7 +4506,7 @@ public class CategoryPlot<R extends Comparable<R>, C extends Comparable<C>>
         }
         if (!(obj instanceof CategoryPlot)) {
             return false;
-        }               
+        }              
         @SuppressWarnings("unchecked")
         CategoryPlot<R, C> that = (CategoryPlot) obj;
         if (this.orientation != that.orientation) {

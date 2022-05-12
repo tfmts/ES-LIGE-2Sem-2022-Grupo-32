@@ -88,23 +88,10 @@ public class LongNeedle extends MeterNeedle implements Cloneable, Serializable {
         if (y < minY) {
             y = minY;
         }
-        shape1.moveTo(minX, midY);
-        shape1.lineTo(midX, minY);
-        shape1.lineTo(midX, y);
-        shape1.closePath();
-
-        shape2.moveTo(maxX, midY);
-        shape2.lineTo(midX, minY);
-        shape2.lineTo(midX, y);
-        shape2.closePath();
-
-        shape3.moveTo(minX, midY);
-        shape3.lineTo(midX, maxY);
-        shape3.lineTo(maxX, midY);
-        shape3.lineTo(midX, y);
-        shape3.closePath();
-
-        Shape s1 = shape1;
+        shape1(shape1, minX, minY, midX, midY, y);
+		shape2(shape2, minY, maxX, midX, midY, y);
+		shape3(shape3, minX, maxX, maxY, midX, midY, y);
+		Shape s1 = shape1;
         Shape s2 = shape2;
         Shape s3 = shape3;
 
@@ -135,6 +122,28 @@ public class LongNeedle extends MeterNeedle implements Cloneable, Serializable {
             g2.draw(s3);
         }
     }
+
+	private void shape2(GeneralPath shape2, float minY, float maxX, float midX, float midY, float y) {
+		shape2.moveTo(maxX, midY);
+		shape2.lineTo(midX, minY);
+		shape2.lineTo(midX, y);
+		shape2.closePath();
+	}
+
+	private void shape1(GeneralPath shape1, float minX, float minY, float midX, float midY, float y) {
+		shape1.moveTo(minX, midY);
+		shape1.lineTo(midX, minY);
+		shape1.lineTo(midX, y);
+		shape1.closePath();
+	}
+
+	private void shape3(GeneralPath shape3, float minX, float maxX, float maxY, float midX, float midY, float y) {
+		shape3.moveTo(minX, midY);
+		shape3.lineTo(midX, maxY);
+		shape3.lineTo(maxX, midY);
+		shape3.lineTo(midX, y);
+		shape3.closePath();
+	}
 
     /**
      * Tests another object for equality with this object.

@@ -537,13 +537,8 @@ public class RingPlot extends PiePlot implements Cloneable, Serializable {
                 }
                 
                 if (section == 0) {
-                    String nstr = null;
-                    if (this.centerTextMode.equals(CenterTextMode.VALUE)) {
-                        nstr = this.centerTextFormatter.format(n);
-                    } else if (this.centerTextMode.equals(CenterTextMode.FIXED)) {
-                        nstr = this.centerText;
-                    }
-                    if (nstr != null) {
+                    String nstr = nstr(n);
+					if (nstr != null) {
                         g2.setFont(this.centerTextFont);
                         g2.setPaint(this.centerTextColor);
                         TextUtils.drawAlignedString(nstr, g2, 
@@ -557,20 +552,9 @@ public class RingPlot extends PiePlot implements Cloneable, Serializable {
                 if (state.getInfo() != null) {
                     EntityCollection entities = state.getEntityCollection();
                     if (entities != null) {
-                        String tip = null;
-                        PieToolTipGenerator toolTipGenerator
-                                = getToolTipGenerator();
-                        if (toolTipGenerator != null) {
-                            tip = toolTipGenerator.generateToolTip(dataset,
-                                    key);
-                        }
-                        String url = null;
-                        PieURLGenerator urlGenerator = getURLGenerator();
-                        if (urlGenerator != null) {
-                            url = urlGenerator.generateURL(dataset, key,
-                                    getPieIndex());
-                        }
-                        PieSectionEntity entity = new PieSectionEntity(path,
+                        String tip = tip(dataset, key);
+						String url = url(dataset, key);
+						PieSectionEntity entity = new PieSectionEntity(path,
                                 dataset, getPieIndex(), section, key, tip,
                                 url);
                         entities.add(entity);
@@ -590,6 +574,34 @@ public class RingPlot extends PiePlot implements Cloneable, Serializable {
         }
         state.setLatestAngle(angle2);
     }
+
+	private String tip(PieDataset dataset, Comparable key) {
+		String tip = null;
+		PieToolTipGenerator toolTipGenerator = getToolTipGenerator();
+		if (toolTipGenerator != null) {
+			tip = toolTipGenerator.generateToolTip(dataset, key);
+		}
+		return tip;
+	}
+
+	private String url(PieDataset dataset, Comparable key) {
+		String url = null;
+		PieURLGenerator urlGenerator = getURLGenerator();
+		if (urlGenerator != null) {
+			url = urlGenerator.generateURL(dataset, key, getPieIndex());
+		}
+		return url;
+	}
+
+	private String nstr(Number n) {
+		String nstr = null;
+		if (this.centerTextMode.equals(CenterTextMode.VALUE)) {
+			nstr = this.centerTextFormatter.format(n);
+		} else if (this.centerTextMode.equals(CenterTextMode.FIXED)) {
+			nstr = this.centerText;
+		}
+		return nstr;
+	}
 
     /**
      * This method overrides the default value for cases where the ring plot

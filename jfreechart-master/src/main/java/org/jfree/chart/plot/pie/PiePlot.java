@@ -2058,12 +2058,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
         RectangleInsets insets = getInsets();
         insets.trim(area);
 
-        if (info != null) {
-            info.setPlotArea(area);
-            info.setDataArea(area);
-        }
-
-        drawBackground(g2, area);
+        info(area, info);
+		drawBackground(g2, area);
         drawOutline(g2, area);
 
         Shape savedClip = g2.getClip();
@@ -2109,6 +2105,13 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
 
     }
 
+	private void info(Rectangle2D area, PlotRenderingInfo info) {
+		if (info != null) {
+			info.setPlotArea(area);
+			info.setDataArea(area);
+		}
+	}
+
     /**
      * Draws the pie.
      *
@@ -2121,12 +2124,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
 
         PiePlotState state = initialise(g2, plotArea, this, null, info);
 
-        // adjust the plot area for interior spacing and labels...
-        double labelReserve = 0.0;
-        if (this.labelGenerator != null && !this.simpleLabels) {
-            labelReserve = this.labelGap + this.maximumLabelWidth;
-        }
-        double gapHorizontal = plotArea.getWidth() * labelReserve * 2.0;
+        double labelReserve = labelReserve();
+		double gapHorizontal = plotArea.getWidth() * labelReserve * 2.0;
         double gapVertical = plotArea.getHeight() * this.interiorGap * 2.0;
 
 
@@ -2157,7 +2156,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
             linkH = 2 * min;
         }
 
-        // the link area defines the dog leg points for the linking lines to
+        Rectangle2D pieArea = pieArea(linkX, linkY, linkW, linkH);
+		// the link area defines the dog leg points for the linking lines to
         // the labels
         Rectangle2D linkArea = new Rectangle2D.Double(linkX, linkY, linkW,
                 linkH);
@@ -2171,31 +2171,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
                     linkArea.getWidth(), linkArea.getHeight()));
         }
 
-        // the explode area defines the max circle/ellipse for the exploded
-        // pie sections.  it is defined by shrinking the linkArea by the
-        // linkMargin factor.
-        double lm = 0.0;
-        if (!this.simpleLabels) {
-            lm = this.labelLinkMargin;
-        }
-        double hh = linkArea.getWidth() * lm * 2.0;
-        double vv = linkArea.getHeight() * lm * 2.0;
-        Rectangle2D explodeArea = new Rectangle2D.Double(linkX + hh / 2.0,
-                linkY + vv / 2.0, linkW - hh, linkH - vv);
-
-        state.setExplodedPieArea(explodeArea);
-
-        // the pie area defines the circle/ellipse for regular pie sections.
-        // it is defined by shrinking the explodeArea by the explodeMargin
-        // factor.
-        double maximumExplodePercent = getMaximumExplodePercent();
-        double percent = maximumExplodePercent / (1.0 + maximumExplodePercent);
-
-        double h1 = explodeArea.getWidth() * percent;
-        double v1 = explodeArea.getHeight() * percent;
-        Rectangle2D pieArea = new Rectangle2D.Double(explodeArea.getX()
-                + h1 / 2.0, explodeArea.getY() + v1 / 2.0,
-                explodeArea.getWidth() - h1, explodeArea.getHeight() - v1);
+        Rectangle2D explodeArea = explodeArea(linkX, linkY, linkW, linkH, linkArea);
+		state.setExplodedPieArea(explodeArea);
 
         if (DEBUG_DRAW_PIE_AREA) {
             g2.setPaint(Color.GREEN);
@@ -2242,6 +2219,37 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
         }
     }
 
+	private Rectangle2D pieArea(double linkX, double linkY, double linkW, double linkH) {
+		Rectangle2D linkArea = new Rectangle2D.Double(linkX, linkY, linkW, linkH);
+		Rectangle2D explodeArea = explodeArea(linkX, linkY, linkW, linkH, linkArea);
+		double maximumExplodePercent = getMaximumExplodePercent();
+		double percent = maximumExplodePercent / (1.0 + maximumExplodePercent);
+		double h1 = explodeArea.getWidth() * percent;
+		double v1 = explodeArea.getHeight() * percent;
+		Rectangle2D pieArea = new Rectangle2D.Double(explodeArea.getX() + h1 / 2.0, explodeArea.getY() + v1 / 2.0,
+				explodeArea.getWidth() - h1, explodeArea.getHeight() - v1);
+		return pieArea;
+	}
+
+	private double labelReserve() {
+		double labelReserve = 0.0;
+		if (this.labelGenerator != null && !this.simpleLabels) {
+			labelReserve = this.labelGap + this.maximumLabelWidth;
+		}
+		return labelReserve;
+	}
+
+	private Rectangle2D explodeArea(double linkX, double linkY, double linkW, double linkH, Rectangle2D linkArea) {
+		double lm = 0.0;
+		if (!this.simpleLabels) {
+			lm = this.labelLinkMargin;
+		}
+		double hh = linkArea.getWidth() * lm * 2.0;
+		double vv = linkArea.getHeight() * lm * 2.0;
+		Rectangle2D explodeArea = new Rectangle2D.Double(linkX + hh / 2.0, linkY + vv / 2.0, linkW - hh, linkH - vv);
+		return explodeArea;
+	}
+
     /**
      * Draws a single data item.
      *
@@ -2276,12 +2284,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
 
         double angle = (angle2 - angle1);
         if (Math.abs(angle) > getMinimumArcAngleToDraw()) {
-            double ep = 0.0;
-            double mep = getMaximumExplodePercent();
-            if (mep > 0.0) {
-                ep = getExplodePercent(dataset.getKey(section)) / mep;
-            }
-            Rectangle2D arcBounds = getArcBounds(state.getPieArea(),
+            double ep = ep(section);
+			Rectangle2D arcBounds = getArcBounds(state.getPieArea(),
                     state.getExplodedPieArea(), angle1, angle, ep);
             Arc2D.Double arc = new Arc2D.Double(arcBounds, angle1, angle,
                     Arc2D.PIE);
@@ -2314,26 +2318,36 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
                 if (state.getInfo() != null) {
                     EntityCollection entities = state.getEntityCollection();
                     if (entities != null) {
-                        String tip = null;
-                        if (this.toolTipGenerator != null) {
-                            tip = this.toolTipGenerator.generateToolTip(
-                                    this.dataset, key);
-                        }
-                        String url = null;
-                        if (this.urlGenerator != null) {
-                            url = this.urlGenerator.generateURL(this.dataset,
-                                    key, this.pieIndex);
-                        }
-                        PieSectionEntity entity = new PieSectionEntity(
-                                arc, this.dataset, this.pieIndex, section, key,
-                                tip, url);
-                        entities.add(entity);
+                        PieSectionEntity entity = entity(section, arc, key);
+						entities.add(entity);
                     }
                 }
             }
         }
         state.setLatestAngle(angle2);
     }
+
+	private double ep(int section) {
+		double ep = 0.0;
+		double mep = getMaximumExplodePercent();
+		if (mep > 0.0) {
+			ep = getExplodePercent(dataset.getKey(section)) / mep;
+		}
+		return ep;
+	}
+
+	private PieSectionEntity entity(int section, Arc2D.Double arc, K key) {
+		String tip = null;
+		if (this.toolTipGenerator != null) {
+			tip = this.toolTipGenerator.generateToolTip(this.dataset, key);
+		}
+		String url = null;
+		if (this.urlGenerator != null) {
+			url = this.urlGenerator.generateURL(this.dataset, key, this.pieIndex);
+		}
+		PieSectionEntity entity = new PieSectionEntity(arc, this.dataset, this.pieIndex, section, key, tip, url);
+		return entity;
+	}
 
     /**
      * Draws the pie section labels in the simple form.
@@ -2369,15 +2383,8 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
             }
 
             if (include) {
-                runningTotal = runningTotal + v;
-                // work out the mid angle (0 - 90 and 270 - 360) = right,
-                // otherwise left
-                double mid = getStartAngle() + (getDirection().getFactor()
-                        * ((runningTotal - v / 2.0) * 360) / totalValue);
-
-                Arc2D arc = new Arc2D.Double(labelsArea, getStartAngle(),
-                        mid - getStartAngle(), Arc2D.OPEN);
-                int x = (int) arc.getEndPoint().getX();
+                Arc2D arc = arc(totalValue, labelsArea, runningTotal, v);
+				int x = (int) arc.getEndPoint().getX();
                 int y = (int) arc.getEndPoint().getY();
 
                 PieSectionLabelGenerator myLabelGenerator = getLabelGenerator();
@@ -2425,6 +2432,13 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
         g2.setComposite(originalComposite);
 
     }
+
+	private Arc2D arc(double totalValue, Rectangle2D labelsArea, double runningTotal, double v) {
+		runningTotal = runningTotal + v;
+		double mid = getStartAngle() + (getDirection().getFactor() * ((runningTotal - v / 2.0) * 360) / totalValue);
+		Arc2D arc = new Arc2D.Double(labelsArea, getStartAngle(), mid - getStartAngle(), Arc2D.OPEN);
+		return arc;
+	}
 
     /**
      * Draws the labels for the pie sections.
@@ -2651,17 +2665,9 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
                         this.dataset, key);
                 if (label != null) {
                     String description = label;
-                    String toolTipText = null;
-                    if (this.legendLabelToolTipGenerator != null) {
-                        toolTipText = this.legendLabelToolTipGenerator
-                                .generateSectionLabel(this.dataset, key);
-                    }
-                    String urlText = null;
-                    if (this.legendLabelURLGenerator != null) {
-                        urlText = this.legendLabelURLGenerator.generateURL(
-                                this.dataset, key, this.pieIndex);
-                    }
-                    Paint paint = lookupSectionPaint(key);
+                    String toolTipText = toolTipText(key);
+					String urlText = urlText(key);
+					Paint paint = lookupSectionPaint(key);
                     Paint outlinePaint = lookupSectionOutlinePaint(key);
                     Stroke outlineStroke = lookupSectionOutlineStroke(key);
                     LegendItem item = new LegendItem(label, description,
@@ -2682,6 +2688,22 @@ public class PiePlot<K extends Comparable<K>> extends Plot implements Cloneable,
         }
         return result;
     }
+
+	private <K extends Comparable<K>> String toolTipText(K key) {
+		String toolTipText = null;
+		if (this.legendLabelToolTipGenerator != null) {
+			toolTipText = this.legendLabelToolTipGenerator.generateSectionLabel(this.dataset, key);
+		}
+		return toolTipText;
+	}
+
+	private <K extends Comparable<K>> String urlText(K key) {
+		String urlText = null;
+		if (this.legendLabelURLGenerator != null) {
+			urlText = this.legendLabelURLGenerator.generateURL(this.dataset, key, this.pieIndex);
+		}
+		return urlText;
+	}
 
     /**
      * Returns a short string describing the type of plot.
