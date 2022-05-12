@@ -3982,7 +3982,7 @@ public class XYPlot<S extends Comparable<S>> extends Plot
     protected void drawRangeCrosshair(Graphics2D g2, Rectangle2D dataArea,
             PlotOrientation orientation, double value, ValueAxis axis,
             Stroke stroke, Paint paint) {
-
+ 
         if (!axis.getRange().contains(value)) {
             return;
         }
