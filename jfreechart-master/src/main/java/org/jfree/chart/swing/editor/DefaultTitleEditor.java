@@ -63,25 +63,12 @@ import org.jfree.chart.title.Title;
  */
 class DefaultTitleEditor extends JPanel implements ActionListener {
 
-    private DefaultTitleEditorRefactoring1 defaultTitleEditorRefactoring1;
+    private DefaultTitleEditorRefactoring2 defaultTitleEditorRefactoring2;
 
-	/** Whether or not to display the title on the chart. */
-    private boolean showTitle;
+	private DefaultTitleEditorRefactoring1 defaultTitleEditorRefactoring1;
 
-    /** The checkbox to indicate whether or not to display the title. */
-    private final JCheckBox showTitleCheckBox;
-
-    /** A field for displaying/editing the title text. */
-    private final JTextField titleField;
-
-    /** The button to use to select a new title font. */
-    private final JButton selectFontButton;
-
-    /** The paint (color) used to draw the title. */
+	/** The paint (color) used to draw the title. */
     private final PaintSample titlePaint;
-
-    /** The button to use to select a new paint (color) to draw the title. */
-    private final JButton selectPaintButton;
 
     /** The resourceBundle for the localization. */
     protected static ResourceBundle localizationResources
@@ -97,9 +84,8 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
 
         TextTitle t = (title != null ? (TextTitle) title
                 : new TextTitle(localizationResources.getString("Title")));
-        this.showTitle = (title != null);
+        defaultTitleEditorRefactoring2.setShowTitle((title != null));
         defaultTitleEditorRefactoring1.setTitleFont(t.getFont());
-        this.titleField = new JTextField(t.getText());
         this.titlePaint = new PaintSample(t.getPaint());
 
         setLayout(new BorderLayout());
@@ -116,42 +102,37 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
         interior.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
         interior.add(new JLabel(localizationResources.getString("Show_Title")));
-        this.showTitleCheckBox = new JCheckBox();
-        this.showTitleCheckBox.setSelected(this.showTitle);
-        this.showTitleCheckBox.setActionCommand("ShowTitle");
-        this.showTitleCheckBox.addActionListener(this);
+        this.defaultTitleEditorRefactoring2.getShowTitleCheckBox().setSelected(this.defaultTitleEditorRefactoring2.getShowTitle());
+        this.defaultTitleEditorRefactoring2.getShowTitleCheckBox().setActionCommand("ShowTitle");
+        this.defaultTitleEditorRefactoring2.getShowTitleCheckBox().addActionListener(this);
         interior.add(new JPanel());
-        interior.add(this.showTitleCheckBox);
+        interior.add(this.defaultTitleEditorRefactoring2.getShowTitleCheckBox());
 
         JLabel titleLabel = new JLabel(localizationResources.getString("Text"));
         interior.add(titleLabel);
-        interior.add(this.titleField);
+        interior.add(this.defaultTitleEditorRefactoring2.getTitleField());
         interior.add(new JPanel());
 
         JLabel fontLabel = new JLabel(localizationResources.getString("Font"));
 		this.defaultTitleEditorRefactoring1 = new DefaultTitleEditorRefactoring1(new FontDisplayField(this.getTitleFont()));
-        this.selectFontButton = new JButton(
-            localizationResources.getString("Select...")
-        );
-        this.selectFontButton.setActionCommand("SelectFont");
-        this.selectFontButton.addActionListener(this);
+        this.defaultTitleEditorRefactoring2.getSelectFontButton().setActionCommand("SelectFont");
+        this.defaultTitleEditorRefactoring2.getSelectFontButton().addActionListener(this);
         interior.add(fontLabel);
         interior.add(this.defaultTitleEditorRefactoring1.getFontfield());
-        interior.add(this.selectFontButton);
+        interior.add(this.defaultTitleEditorRefactoring2.getSelectFontButton());
 
         JLabel colorLabel = new JLabel(
             localizationResources.getString("Color")
         );
-        this.selectPaintButton = new JButton(
-            localizationResources.getString("Select...")
-        );
-        this.selectPaintButton.setActionCommand("SelectPaint");
-        this.selectPaintButton.addActionListener(this);
+		this.defaultTitleEditorRefactoring2 = new DefaultTitleEditorRefactoring2(new JTextField(t.getText()),
+				new JCheckBox(), new JButton(localizationResources.getString("Select...")));
+        this.defaultTitleEditorRefactoring2.getSelectPaintButton().setActionCommand("SelectPaint");
+        this.defaultTitleEditorRefactoring2.getSelectPaintButton().addActionListener(this);
         interior.add(colorLabel);
         interior.add(this.titlePaint);
-        interior.add(this.selectPaintButton);
+        interior.add(this.defaultTitleEditorRefactoring2.getSelectPaintButton());
 
-        this.enableOrDisableControls();
+        defaultTitleEditorRefactoring2.enableOrDisableControls();
 
         general.add(interior);
         add(general, BorderLayout.NORTH);
@@ -163,7 +144,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
      * @return The title text entered in the panel.
      */
     public String getTitleText() {
-        return this.titleField.getText();
+        return defaultTitleEditorRefactoring2.getTitleText();
     }
 
     /**
@@ -202,7 +183,7 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
             attemptPaintSelection();
         }
         else if (command.equals("ShowTitle")) {
-            attemptModifyShowTitle();
+            defaultTitleEditorRefactoring2.attemptModifyShowTitle();
         }
     }
 
@@ -232,39 +213,19 @@ class DefaultTitleEditor extends JPanel implements ActionListener {
     }
 
     /**
-     * Allow the user the opportunity to change whether the title is
-     * displayed on the chart or not.
-     */
-    private void attemptModifyShowTitle() {
-        this.showTitle = this.showTitleCheckBox.isSelected();
-        this.enableOrDisableControls();
-    }
-
-    /**
-     * If we are supposed to show the title, the controls are enabled.
-     * If we are not supposed to show the title, the controls are disabled.
-     */
-    private void enableOrDisableControls() {
-        boolean enabled = (this.showTitle == true);
-        this.titleField.setEnabled(enabled);
-        this.selectFontButton.setEnabled(enabled);
-        this.selectPaintButton.setEnabled(enabled);
-    }
-
-    /**
      * Sets the properties of the specified title to match the properties
      * defined on this panel.
      *
      * @param chart  the chart whose title is to be modified.
      */
     public void setTitleProperties(JFreeChart chart) {
-        if (this.showTitle) {
+        if (this.defaultTitleEditorRefactoring2.getShowTitle()) {
             TextTitle title = chart.getTitle();
             if (title == null) {
                 title = new TextTitle();
                 chart.setTitle(title);
             }
-            title.setText(getTitleText());
+            title.setText(defaultTitleEditorRefactoring2.getTitleText());
             title.setFont(getTitleFont());
             title.setPaint(getTitlePaint());
         }

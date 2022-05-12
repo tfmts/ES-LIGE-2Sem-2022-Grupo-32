@@ -394,27 +394,10 @@ public class TextTitle extends Title implements Serializable, Cloneable,
         LengthConstraintType h = cc.getHeightConstraintType();
         Size2D contentSize = null;
         if (w == LengthConstraintType.NONE) {
-            if (h == LengthConstraintType.NONE) {
-                contentSize = arrangeNN(g2);
-            }
-            else if (h == LengthConstraintType.RANGE) {
-                throw new RuntimeException("Not yet implemented.");
-            }
-            else if (h == LengthConstraintType.FIXED) {
-                throw new RuntimeException("Not yet implemented.");
-            }
+            contentSize = arrangeRefactoring1(g2, h, contentSize);
         }
         else if (w == LengthConstraintType.RANGE) {
-            if (h == LengthConstraintType.NONE) {
-                contentSize = arrangeRN(g2, cc.getWidthRange());
-            }
-            else if (h == LengthConstraintType.RANGE) {
-                contentSize = arrangeRR(g2, cc.getWidthRange(),
-                        cc.getHeightRange());
-            }
-            else if (h == LengthConstraintType.FIXED) {
-                throw new RuntimeException("Not yet implemented.");
-            }
+            contentSize = arrangeRefactoring2(g2, cc, h, contentSize);
         }
         else if (w == LengthConstraintType.FIXED) {
             if (h == LengthConstraintType.NONE) {
@@ -431,6 +414,34 @@ public class TextTitle extends Title implements Serializable, Cloneable,
         return new Size2D(calculateTotalWidth(contentSize.getWidth()),
                 calculateTotalHeight(contentSize.getHeight()));
     }
+
+	public Size2D arrangeRefactoring2(Graphics2D g2, RectangleConstraint cc, LengthConstraintType h,
+			Size2D contentSize) {
+		if (h == LengthConstraintType.NONE) {
+		    contentSize = arrangeRN(g2, cc.getWidthRange());
+		}
+		else if (h == LengthConstraintType.RANGE) {
+		    contentSize = arrangeRR(g2, cc.getWidthRange(),
+		            cc.getHeightRange());
+		}
+		else if (h == LengthConstraintType.FIXED) {
+		    throw new RuntimeException("Not yet implemented.");
+		}
+		return contentSize;
+	}
+
+	public Size2D arrangeRefactoring1(Graphics2D g2, LengthConstraintType h, Size2D contentSize) {
+		if (h == LengthConstraintType.NONE) {
+		    contentSize = arrangeNN(g2);
+		}
+		else if (h == LengthConstraintType.RANGE) {
+		    throw new RuntimeException("Not yet implemented.");
+		}
+		else if (h == LengthConstraintType.FIXED) {
+		    throw new RuntimeException("Not yet implemented.");
+		}
+		return contentSize;
+	}
 
     /**
      * Arranges the content for this title assuming no bounds on the width

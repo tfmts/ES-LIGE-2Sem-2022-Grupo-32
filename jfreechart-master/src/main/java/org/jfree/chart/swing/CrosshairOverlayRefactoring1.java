@@ -150,35 +150,45 @@ public class CrosshairOverlayRefactoring1 implements Serializable, PublicCloneab
 		if (line.getX1() == line.getX2()) {
 			x = line.getX1();
 			y = (line.getY1() + line.getY2()) / 2.0;
-			if (left) {
-				x = x - deltaX;
-			}
-			if (right) {
-				x = x + deltaX;
-			}
-			if (top) {
-				y = Math.min(line.getY1(), line.getY2()) + deltaY;
-			}
-			if (bottom) {
-				y = Math.max(line.getY1(), line.getY2()) - deltaY;
-			}
+			x = calculateLabelPointRefactoring1(deltaX, x, left, right);
+			y = calculateLabelPointRefactoring3(line, deltaY, y, top, bottom);
 		} else {
 			x = (line.getX1() + line.getX2()) / 2.0;
 			y = line.getY1();
-			if (left) {
-				x = Math.min(line.getX1(), line.getX2()) + deltaX;
-			}
-			if (right) {
-				x = Math.max(line.getX1(), line.getX2()) - deltaX;
-			}
-			if (top) {
-				y = y - deltaY;
-			}
-			if (bottom) {
-				y = y + deltaY;
-			}
+			x = calculateLabelPointRefactoring2(line, deltaX, x, left, right);
+			y = calculateLabelPointRefactoring1(deltaY, y, top, bottom);
 		}
 		return new Point2D.Double(x, y);
+	}
+
+	public double calculateLabelPointRefactoring3(Line2D line, double deltaY, double y, boolean top, boolean bottom) {
+		if (top) {
+			y = Math.min(line.getY1(), line.getY2()) + deltaY;
+		}
+		if (bottom) {
+			y = Math.max(line.getY1(), line.getY2()) - deltaY;
+		}
+		return y;
+	}
+
+	public double calculateLabelPointRefactoring2(Line2D line, double deltaX, double x, boolean left, boolean right) {
+		if (left) {
+			x = Math.min(line.getX1(), line.getX2()) + deltaX;
+		}
+		if (right) {
+			x = Math.max(line.getX1(), line.getX2()) - deltaX;
+		}
+		return x;
+	}
+
+	public double calculateLabelPointRefactoring1(double deltaX, double x, boolean left, boolean right) {
+		if (left) {
+			x = x - deltaX;
+		}
+		if (right) {
+			x = x + deltaX;
+		}
+		return x;
 	}
 
 	/**
