@@ -447,9 +447,7 @@ public class DefaultPolarItemRenderer extends AbstractRenderer
             }
         }
         assert poly != null;
-        if (getConnectFirstAndLastPoint()) {
-            poly.closePath();
-        }
+        drawSeries_refactoring3(poly);
 
         g2.setPaint(lookupSeriesPaint(seriesIndex));
         g2.setStroke(lookupSeriesStroke(seriesIndex));
@@ -473,9 +471,7 @@ public class DefaultPolarItemRenderer extends AbstractRenderer
         if (this.shapesVisible) {
             // setup for collecting optional entity info...
             EntityCollection entities = null;
-            if (info != null) {
-                entities = info.getOwner().getEntityCollection();
-            }
+            entities = drawSeries_refactoring2(info, entities);
 
             PathIterator pi = poly.getPathIterator(null);
             int i = 0;
@@ -493,29 +489,49 @@ public class DefaultPolarItemRenderer extends AbstractRenderer
                         getItemShape(seriesIndex, i++), x,  y);
 
                 Paint paint;
-                if (useFillPaint) {
-                    paint = lookupSeriesFillPaint(seriesIndex);
-                }
-                else {
-                    paint = lookupSeriesPaint(seriesIndex);
-                }
-                g2.setPaint(paint);
-                g2.fill(shape);
-                if (isSeriesFilled(seriesIndex) && this.drawOutlineWhenFilled) {
-                    g2.setPaint(lookupSeriesOutlinePaint(seriesIndex));
-                    g2.setStroke(lookupSeriesOutlineStroke(seriesIndex));
-                    g2.draw(shape);
-                }
-
-                // add an entity for the item, but only if it falls within the
-                // data area...
-                if (entities != null && ShapeUtils.isPointInRect(dataArea, x, 
-                        y)) {
-                    addEntity(entities, shape, dataset, seriesIndex, i-1, x, y);
-                }
+                paint = drawSeries_refactoring(g2, dataArea, dataset, seriesIndex, entities, i, x, y, shape);
             }
         }
     }
+
+	public void drawSeries_refactoring3(GeneralPath poly) {
+		if (getConnectFirstAndLastPoint()) {
+            poly.closePath();
+        }
+	}
+
+	public EntityCollection drawSeries_refactoring2(PlotRenderingInfo info, EntityCollection entities) {
+		if (info != null) {
+		    entities = info.getOwner().getEntityCollection();
+		}
+		return entities;
+	}
+
+	public Paint drawSeries_refactoring(Graphics2D g2, Rectangle2D dataArea, XYDataset dataset, int seriesIndex,
+			EntityCollection entities, int i, final int x, final int y, final Shape shape) {
+		Paint paint;
+		if (useFillPaint) {
+		    paint = lookupSeriesFillPaint(seriesIndex);
+		}
+		else {
+		    paint = lookupSeriesPaint(seriesIndex);
+		}
+		g2.setPaint(paint);
+		g2.fill(shape);
+		if (isSeriesFilled(seriesIndex) && this.drawOutlineWhenFilled) {
+		    g2.setPaint(lookupSeriesOutlinePaint(seriesIndex));
+		    g2.setStroke(lookupSeriesOutlineStroke(seriesIndex));
+		    g2.draw(shape);
+		}
+
+		// add an entity for the item, but only if it falls within the
+		// data area...
+		if (entities != null && ShapeUtils.isPointInRect(dataArea, x, 
+		        y)) {
+		    addEntity(entities, shape, dataset, seriesIndex, i-1, x, y);
+		}
+		return paint;
+	}
 
     /**
      * Draw the angular gridlines - the spokes.

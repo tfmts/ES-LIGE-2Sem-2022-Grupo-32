@@ -95,7 +95,13 @@ import org.jfree.data.ItemKey;
  */
 public abstract class AbstractRenderer implements ChartElement, Cloneable, Serializable {
 
-    /** For serialization. */
+    private AbstractRenderer_refactoring3 abstractRenderer_refactoring3 = new AbstractRenderer_refactoring3();
+
+	private AbstractRenderer_refactoring2 abstractRenderer_refactoring2 = new AbstractRenderer_refactoring2();
+
+	private transient AbstractRenderer_refactoring abstractRenderer_refactoring = new AbstractRenderer_refactoring();
+
+	/** For serialization. */
     private static final long serialVersionUID = -828267569428206075L;
 
     /** Zero represented as a {@code double}. */
@@ -123,21 +129,6 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
 
     /** The default value label paint. */
     public static final Paint DEFAULT_VALUE_LABEL_PAINT = Color.BLACK;
-
-    /** A list of flags that controls whether or not each series is visible. */
-    private Map<Integer, Boolean> seriesVisibleMap;
-
-    /** The default visibility for all series. */
-    private boolean defaultSeriesVisible;
-
-    /**
-     * A list of flags that controls whether or not each series is visible in
-     * the legend.
-     */
-    private Map<Integer, Boolean> seriesVisibleInLegendMap;
-
-    /** The default visibility for each series in the legend. */
-    private boolean defaultSeriesVisibleInLegend;
 
     /** The paint for each series. */
     private transient Map<Integer, Paint> seriesPaintMap;
@@ -298,9 +289,6 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
     /** The default radius for the entity 'hotspot' */
     private int defaultEntityRadius;
 
-    /** Storage for registered change listeners. */
-    private transient EventListenerList listenerList;
-
     /** An event for re-use. */
     private transient RendererChangeEvent event;
 
@@ -308,11 +296,11 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * Default constructor.
      */
     public AbstractRenderer() {
-        this.seriesVisibleMap = new HashMap<>();
-        this.defaultSeriesVisible = true;
+        abstractRenderer_refactoring2.setSeriesVisibleMap(new HashMap<>());
+        abstractRenderer_refactoring2.setDefaultSeriesVisible(true);
 
-        this.seriesVisibleInLegendMap = new HashMap<>();
-        this.defaultSeriesVisibleInLegend = true;
+        abstractRenderer_refactoring3.setSeriesVisibleInLegendMap(new HashMap<>());
+        abstractRenderer_refactoring3.setDefaultSeriesVisibleInLegend2(true);
 
         this.seriesPaintMap = new HashMap<>();
         this.defaultPaint = DEFAULT_PAINT;
@@ -371,7 +359,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
         this.legendTextPaints = new HashMap<>();
         this.defaultLegendTextPaint = null;
 
-        this.listenerList = new EventListenerList();
+        abstractRenderer_refactoring.setListenerList(new EventListenerList());
     }
 
     /**
@@ -431,7 +419,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @return A boolean.
      */
     public boolean getItemVisible(int series, int item) {
-        return isSeriesVisible(series);
+        return abstractRenderer_refactoring2.isSeriesVisible(series);
     }
 
     /**
@@ -445,12 +433,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @return A boolean.
      */
     public boolean isSeriesVisible(int series) {
-        boolean result = this.defaultSeriesVisible;
-        Boolean b = this.seriesVisibleMap.get(series);
-        if (b != null) {
-            result = b;
-        }
-        return result;
+        return abstractRenderer_refactoring2.isSeriesVisible(series);
     }
 
     /**
@@ -463,7 +446,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #setSeriesVisible(int, Boolean)
      */
     public Boolean getSeriesVisible(int series) {
-        return this.seriesVisibleMap.get(series);
+        return this.abstractRenderer_refactoring2.getSeriesVisibleMap().get(series);
     }
 
     /**
@@ -491,14 +474,14 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #getSeriesVisible(int)
      */
     public void setSeriesVisible(int series, Boolean visible, boolean notify) {
-        this.seriesVisibleMap.put(series, visible);
+        this.abstractRenderer_refactoring2.getSeriesVisibleMap().put(series, visible);
         if (notify) {
             // we create an event with a special flag set...the purpose of
             // this is to communicate to the plot (the default receiver of
             // the event) that series visibility has changed so the axis
             // ranges might need updating...
             RendererChangeEvent e = new RendererChangeEvent(this, true);
-            notifyListeners(e);
+            abstractRenderer_refactoring.notifyListeners(e);
         }
     }
 
@@ -510,7 +493,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #setDefaultSeriesVisible(boolean)
      */
     public boolean getDefaultSeriesVisible() {
-        return this.defaultSeriesVisible;
+        return this.abstractRenderer_refactoring2.getDefaultSeriesVisible();
     }
 
     /**
@@ -536,14 +519,14 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #getDefaultSeriesVisible()
      */
     public void setDefaultSeriesVisible(boolean visible, boolean notify) {
-        this.defaultSeriesVisible = visible;
+        abstractRenderer_refactoring2.setDefaultSeriesVisible(visible);
         if (notify) {
             // we create an event with a special flag set...the purpose of
             // this is to communicate to the plot (the default receiver of
             // the event) that series visibility has changed so the axis
             // ranges might need updating...
             RendererChangeEvent e = new RendererChangeEvent(this, true);
-            notifyListeners(e);
+            abstractRenderer_refactoring.notifyListeners(e);
         }
     }
 
@@ -558,12 +541,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @return A boolean.
      */
     public boolean isSeriesVisibleInLegend(int series) {
-        boolean result = this.defaultSeriesVisibleInLegend;
-        Boolean b = this.seriesVisibleInLegendMap.get(series);
-        if (b != null) {
-            result = b;
-        }
-        return result;
+        return abstractRenderer_refactoring3.isSeriesVisibleInLegend(series);
     }
 
     /**
@@ -579,7 +557,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #setSeriesVisibleInLegend(int, Boolean)
      */
     public Boolean getSeriesVisibleInLegend(int series) {
-        return this.seriesVisibleInLegendMap.get(series);
+        return this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap().get(series);
     }
 
     /**
@@ -607,7 +585,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #getSeriesVisibleInLegend(int)
      */
     public void setSeriesVisibleInLegend(int series, Boolean visible, boolean notify) {
-        this.seriesVisibleInLegendMap.put(series, visible);
+        this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap().put(series, visible);
         if (notify) {
             fireChangeEvent();
         }
@@ -621,7 +599,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #setDefaultSeriesVisibleInLegend(boolean)
      */
     public boolean getDefaultSeriesVisibleInLegend() {
-        return this.defaultSeriesVisibleInLegend;
+        return this.abstractRenderer_refactoring3.getDefaultSeriesVisibleInLegend();
     }
 
     /**
@@ -634,7 +612,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      */
     public void setDefaultSeriesVisibleInLegend(boolean visible) {
         // defer argument checking...
-        setDefaultSeriesVisibleInLegend(visible, true);
+        abstractRenderer_refactoring3.setDefaultSeriesVisibleInLegend(visible, true, this);
     }
 
     /**
@@ -648,10 +626,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      */
     public void setDefaultSeriesVisibleInLegend(boolean visible, 
             boolean notify) {
-        this.defaultSeriesVisibleInLegend = visible;
-        if (notify) {
-            fireChangeEvent();
-        }
+        abstractRenderer_refactoring3.setDefaultSeriesVisibleInLegend(visible, notify, this);
     }
 
     // PAINT
@@ -2506,7 +2481,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      */
     public void setDataBoundsIncludesVisibleSeriesOnly(boolean visibleOnly) {
         this.dataBoundsIncludesVisibleSeriesOnly = visibleOnly;
-        notifyListeners(new RendererChangeEvent(this, true));
+        abstractRenderer_refactoring.notifyListeners(new RendererChangeEvent(this, true));
     }
 
     /** The adjacent offset. */
@@ -2647,8 +2622,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #removeChangeListener(RendererChangeListener)
      */
     public void addChangeListener(RendererChangeListener listener) {
-        Args.nullNotPermitted(listener, "listener");
-        this.listenerList.add(RendererChangeListener.class, listener);
+        abstractRenderer_refactoring.addChangeListener(listener);
     }
 
     /**
@@ -2660,8 +2634,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @see #addChangeListener(RendererChangeListener)
      */
     public void removeChangeListener(RendererChangeListener listener) {
-        Args.nullNotPermitted(listener, "listener");
-        this.listenerList.remove(RendererChangeListener.class, listener);
+        abstractRenderer_refactoring.removeChangeListener(listener);
     }
 
     /**
@@ -2674,15 +2647,14 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @return A boolean.
      */
     public boolean hasListener(EventListener listener) {
-        List<Object> list = Arrays.asList(this.listenerList.getListenerList());
-        return list.contains(listener);
+        return abstractRenderer_refactoring.hasListener(listener);
     }
 
     /**
      * Sends a {@link RendererChangeEvent} to all registered listeners.
      */
-    protected void fireChangeEvent() {
-        notifyListeners(new RendererChangeEvent(this));
+    public void fireChangeEvent() {
+        abstractRenderer_refactoring.notifyListeners(new RendererChangeEvent(this));
     }
 
     /**
@@ -2691,12 +2663,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      * @param event  information about the change event.
      */
     public void notifyListeners(RendererChangeEvent event) {
-        Object[] ls = this.listenerList.getListenerList();
-        for (int i = ls.length - 2; i >= 0; i -= 2) {
-            if (ls[i] == RendererChangeListener.class) {
-                ((RendererChangeListener) ls[i + 1]).rendererChanged(event);
-            }
-        }
+        abstractRenderer_refactoring.notifyListeners(event);
     }
 
     /**
@@ -2725,17 +2692,17 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
         if (this.defaultEntityRadius != that.defaultEntityRadius) {
             return false;
         }
-        if (!this.seriesVisibleMap.equals(that.seriesVisibleMap)) {
+        if (!this.abstractRenderer_refactoring2.getSeriesVisibleMap().equals(that.abstractRenderer_refactoring2.getSeriesVisibleMap())) {
             return false;
         }
-        if (this.defaultSeriesVisible != that.defaultSeriesVisible) {
+        if (this.abstractRenderer_refactoring2.getDefaultSeriesVisible() != that.abstractRenderer_refactoring2.getDefaultSeriesVisible()) {
             return false;
         }
-        if (!this.seriesVisibleInLegendMap.equals(that.seriesVisibleInLegendMap)) {
+        if (!this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap().equals(that.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap())) {
             return false;
         }
-        if (this.defaultSeriesVisibleInLegend
-                != that.defaultSeriesVisibleInLegend) {
+        if (this.abstractRenderer_refactoring3.getDefaultSeriesVisibleInLegend()
+                != that.abstractRenderer_refactoring3.getDefaultSeriesVisibleInLegend()) {
             return false;
         }
         if (!PaintUtils.equal(this.seriesPaintMap, that.seriesPaintMap)) {
@@ -2865,10 +2832,10 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
     @Override
     public int hashCode() {
         int result = 193;
-        result = HashUtils.hashCode(result, this.seriesVisibleMap);
-        result = HashUtils.hashCode(result, this.defaultSeriesVisible);
-        result = HashUtils.hashCode(result, this.seriesVisibleInLegendMap);
-        result = HashUtils.hashCode(result, this.defaultSeriesVisibleInLegend);
+        result = HashUtils.hashCode(result, this.abstractRenderer_refactoring2.getSeriesVisibleMap());
+        result = HashUtils.hashCode(result, this.abstractRenderer_refactoring2.getDefaultSeriesVisible());
+        result = HashUtils.hashCode(result, this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap());
+        result = HashUtils.hashCode(result, this.abstractRenderer_refactoring3.getDefaultSeriesVisibleInLegend());
         result = HashUtils.hashCode(result, this.seriesPaintMap);
         result = HashUtils.hashCode(result, this.defaultPaint);
         result = HashUtils.hashCode(result, this.seriesFillPaintMap);
@@ -2908,13 +2875,20 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
     @Override
     protected Object clone() throws CloneNotSupportedException {
         AbstractRenderer clone = (AbstractRenderer) super.clone();
+		clone.abstractRenderer_refactoring3 = (AbstractRenderer_refactoring3) this.abstractRenderer_refactoring3
+				.clone();
+		clone.abstractRenderer_refactoring2 = (AbstractRenderer_refactoring2) this.abstractRenderer_refactoring2
+				.clone();
+		clone.abstractRenderer_refactoring = (AbstractRenderer_refactoring) this.abstractRenderer_refactoring.clone();
 
-        if (this.seriesVisibleMap != null) {
-            clone.seriesVisibleMap = new HashMap<>(this.seriesVisibleMap);
+        if (this.abstractRenderer_refactoring2.getSeriesVisibleMap() != null) {
+            clone.abstractRenderer_refactoring2
+					.setSeriesVisibleMap(new HashMap<>(this.abstractRenderer_refactoring2.getSeriesVisibleMap()));
         }
 
-        if (this.seriesVisibleInLegendMap != null) {
-            clone.seriesVisibleInLegendMap = new HashMap<>(this.seriesVisibleInLegendMap);
+        if (this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap() != null) {
+            clone.abstractRenderer_refactoring3.setSeriesVisibleInLegendMap(
+					new HashMap<>(this.abstractRenderer_refactoring3.getSeriesVisibleInLegendMap()));
         }
 
         // 'paint' : immutable, no need to clone reference
@@ -2992,7 +2966,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
         if (this.legendTextPaints != null) {
             clone.legendTextPaints = new HashMap<>(this.legendTextPaints);
         }
-        clone.listenerList = new EventListenerList();
+        clone.abstractRenderer_refactoring.setListenerList(new EventListenerList());
         clone.event = null;
         return clone;
     }
@@ -3006,6 +2980,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      */
     private void writeObject(ObjectOutputStream stream) throws IOException {
         stream.defaultWriteObject();
+		stream.writeObject(this.abstractRenderer_refactoring);
         SerialUtils.writeMapOfPaint(this.seriesPaintMap, stream);
         SerialUtils.writePaint(this.defaultPaint, stream);
         SerialUtils.writeMapOfPaint(this.seriesFillPaintMap, stream);
@@ -3034,6 +3009,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
      */
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
+		this.abstractRenderer_refactoring = (AbstractRenderer_refactoring) stream.readObject();
         this.seriesPaintMap = SerialUtils.readMapOfPaint(stream);
         this.defaultPaint = SerialUtils.readPaint(stream);
         this.seriesFillPaintMap = SerialUtils.readMapOfPaint(stream);
@@ -3053,7 +3029,7 @@ public abstract class AbstractRenderer implements ChartElement, Cloneable, Seria
 
         // listeners are not restored automatically, but storage must be
         // provided...
-        this.listenerList = new EventListenerList();
+        abstractRenderer_refactoring.setListenerList(new EventListenerList());
     }
 
 }

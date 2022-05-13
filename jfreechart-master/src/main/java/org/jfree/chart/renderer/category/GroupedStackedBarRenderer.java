@@ -138,31 +138,32 @@ public class GroupedStackedBarRenderer extends StackedBarRenderer
             else if (orientation == PlotOrientation.VERTICAL) {
                 space = dataArea.getWidth();
             }
-            double maxWidth = space * getMaximumBarWidth();
-            int groups = this.seriesToGroupMap.getGroupCount();
-            int categories = data.getColumnCount();
-            int columns = groups * categories;
-            double categoryMargin = 0.0;
-            double itemMargin = 0.0;
-            if (categories > 1) {
-                categoryMargin = xAxis.getCategoryMargin();
-            }
-            if (groups > 1) {
-                itemMargin = getItemMargin();
-            }
-
-            double used = space * (1 - xAxis.getLowerMargin()
-                                     - xAxis.getUpperMargin()
-                                     - categoryMargin - itemMargin);
-            if (columns > 0) {
-                state.setBarWidth(Math.min(used / columns, maxWidth));
-            }
-            else {
-                state.setBarWidth(Math.min(used, maxWidth));
-            }
+            calculateBarWidth_refactoring(state, xAxis, data, space);
         }
 
     }
+
+	private void calculateBarWidth_refactoring(CategoryItemRendererState state, CategoryAxis xAxis,
+			CategoryDataset data, double space) {
+		double maxWidth = space * getMaximumBarWidth();
+		int groups = this.seriesToGroupMap.getGroupCount();
+		int categories = data.getColumnCount();
+		int columns = groups * categories;
+		double categoryMargin = 0.0;
+		double itemMargin = 0.0;
+		if (categories > 1) {
+			categoryMargin = xAxis.getCategoryMargin();
+		}
+		if (groups > 1) {
+			itemMargin = getItemMargin();
+		}
+		double used = space * (1 - xAxis.getLowerMargin() - xAxis.getUpperMargin() - categoryMargin - itemMargin);
+		if (columns > 0) {
+			state.setBarWidth(Math.min(used / columns, maxWidth));
+		} else {
+			state.setBarWidth(Math.min(used, maxWidth));
+		}
+	}
 
     /**
      * Calculates the coordinate of the first "side" of a bar.  This will be
