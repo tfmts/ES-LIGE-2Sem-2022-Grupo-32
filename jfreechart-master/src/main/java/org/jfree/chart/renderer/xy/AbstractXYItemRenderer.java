@@ -993,9 +993,8 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateDomainMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateDomainMarkerTextAnchorPoint(
                         g2, orientation, dataArea, line.getBounds2D(),
-                        marker.getLabelOffset(),
                         LengthAdjustmentType.EXPAND, anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1096,9 +1095,9 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateDomainMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateDomainMarkerTextAnchorPoint(
                         g2, orientation, dataArea, rect,
-                        marker.getLabelOffset(), marker.getLabelOffsetType(),
+                        marker.getLabelOffsetType(),
                         anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1112,37 +1111,6 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             }
             g2.setComposite(originalComposite);
         }
-    }
-
-    /**
-     * Calculates the {@code (x, y)} coordinates for drawing a marker label.
-     *
-     * @param g2  the graphics device.
-     * @param orientation  the plot orientation.
-     * @param dataArea  the data area.
-     * @param markerArea  the rectangle surrounding the marker area.
-     * @param markerOffset  the marker label offset.
-     * @param labelOffsetType  the label offset type.
-     * @param anchor  the label anchor.
-     *
-     * @return The coordinates for drawing the marker label.
-     */
-    protected Point2D calculateDomainMarkerTextAnchorPoint(Graphics2D g2,
-            PlotOrientation orientation, Rectangle2D dataArea,
-            Rectangle2D markerArea, RectangleInsets markerOffset,
-            LengthAdjustmentType labelOffsetType, RectangleAnchor anchor) {
-
-        Rectangle2D anchorRect = null;
-        if (orientation == PlotOrientation.HORIZONTAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    LengthAdjustmentType.CONTRACT, labelOffsetType);
-        }
-        else if (orientation == PlotOrientation.VERTICAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    labelOffsetType, LengthAdjustmentType.CONTRACT);
-        }
-        return anchor.getAnchorPoint(anchorRect);
-
     }
 
     /**
@@ -1196,9 +1164,8 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateRangeMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateRangeMarkerTextAnchorPoint(
                         g2, orientation, dataArea, line.getBounds2D(),
-                        marker.getLabelOffset(),
                         LengthAdjustmentType.EXPAND, anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1299,9 +1266,9 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateRangeMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateRangeMarkerTextAnchorPoint(
                         g2, orientation, dataArea, rect,
-                        marker.getLabelOffset(), marker.getLabelOffsetType(),
+                        marker.getLabelOffsetType(),
                         anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1315,37 +1282,6 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             }
             g2.setComposite(originalComposite);
         }
-    }
-
-    /**
-     * Calculates the (x, y) coordinates for drawing a marker label.
-     *
-     * @param g2  the graphics device.
-     * @param orientation  the plot orientation.
-     * @param dataArea  the data area.
-     * @param markerArea  the marker area.
-     * @param markerOffset  the marker offset.
-     * @param labelOffsetForRange  ??
-     * @param anchor  the label anchor.
-     *
-     * @return The coordinates for drawing the marker label.
-     */
-    private Point2D calculateRangeMarkerTextAnchorPoint(Graphics2D g2,
-           PlotOrientation orientation, Rectangle2D dataArea,
-           Rectangle2D markerArea, RectangleInsets markerOffset,
-           LengthAdjustmentType labelOffsetForRange, RectangleAnchor anchor) {
-
-        Rectangle2D anchorRect = null;
-        if (orientation == PlotOrientation.HORIZONTAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    labelOffsetForRange, LengthAdjustmentType.CONTRACT);
-        }
-        else if (orientation == PlotOrientation.VERTICAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    LengthAdjustmentType.CONTRACT, labelOffsetForRange);
-        }
-        return anchor.getAnchorPoint(anchorRect);
-
     }
 
     /**
@@ -1468,25 +1404,7 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             double x, double y, int datasetIndex,
             double transX, double transY, PlotOrientation orientation) {
 
-        Args.nullNotPermitted(orientation, "orientation");
-        if (crosshairState != null) {
-            // do we need to update the crosshair values?
-            if (this.plot.isDomainCrosshairLockedOnData()) {
-                if (this.plot.isRangeCrosshairLockedOnData()) {
-                    // both axes
-                    crosshairState.updateCrosshairPoint(x, y, datasetIndex,
-                            transX, transY, orientation);
-                } else {
-                    // just the domain axis...
-                    crosshairState.updateCrosshairX(x, transX, datasetIndex);
-                }
-            } else {
-                if (this.plot.isRangeCrosshairLockedOnData()) {
-                    // just the range axis...
-                    crosshairState.updateCrosshairY(y, transY, datasetIndex);
-                }
-            }
-        }
+        crosshairState.updateCrosshairValues(x, y, datasetIndex, transX, transY, orientation, plot);
 
     }
 

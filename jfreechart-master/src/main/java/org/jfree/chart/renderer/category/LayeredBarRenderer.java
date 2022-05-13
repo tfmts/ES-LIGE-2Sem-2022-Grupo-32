@@ -395,8 +395,8 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
         double shift = 0.0;
         double widthFactor = 1.0;
         double seriesBarWidth = getSeriesBarWidth(row);
-        Rectangle2D bar = drawVerticalItem_refactoring(g2, state, dataset, row, column, rectX, seriesCount, rectY,
-				rectHeight, shift, widthFactor, seriesBarWidth);
+        Rectangle2D bar = state.drawVerticalItem_refactoring(g2, dataset, row, column, rectX, seriesCount, rectY,
+				rectHeight, shift, widthFactor, seriesBarWidth, this);
 
         Paint itemPaint = getItemPaint(row, column);
         GradientPaintTransformer t = getGradientPaintTransformer();
@@ -442,32 +442,7 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
 		return itemPaint;
 	}
 
-	protected Rectangle2D drawVerticalItem_refactoring(Graphics2D g2, CategoryItemRendererState state,
-			CategoryDataset dataset, int row, int column, double rectX, int seriesCount, double rectY,
-			double rectHeight, double shift, double widthFactor, double seriesBarWidth) {
-		double rectWidth;
-		if (!Double.isNaN(seriesBarWidth)) {
-            widthFactor = seriesBarWidth;
-        }
-        rectWidth = widthFactor * state.getBarWidth();
-        rectX = rectX + (1 - widthFactor) * state.getBarWidth() / 2.0;
-        if (seriesCount > 1) {
-            // needs to be improved !!!
-            shift = rectWidth * 0.20 / (seriesCount - 1);
-        }
-
-        Rectangle2D bar = new Rectangle2D.Double(
-            (rectX + ((seriesCount - 1 - row) * shift)), rectY,
-            (rectWidth - (seriesCount - 1 - row) * shift * 2), rectHeight);
-
-        if (state.getElementHinting()) {
-            beginElementGroup(g2, dataset.getRowKey(row), 
-                    dataset.getColumnKey(column));
-        }
-		return bar;
-	}
-
-    @Override
+	@Override
     public int hashCode() {
         int hash = 7;
         hash = 17 * hash + Objects.hashCode(this.seriesBarWidths);

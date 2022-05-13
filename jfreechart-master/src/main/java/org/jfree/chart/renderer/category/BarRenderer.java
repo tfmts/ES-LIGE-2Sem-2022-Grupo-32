@@ -722,8 +722,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
         if (seriesCount > 1) {
             double seriesGap = space * getItemMargin()
                                / (categoryCount * (seriesCount - 1));
-            double seriesW = calculateSeriesWidth(space, domainAxis,
-                    categoryCount, seriesCount);
+            double seriesW = domainAxis.calculateSeriesWidth(space, categoryCount, seriesCount, itemMargin);
             barW0 = barW0 + row * (seriesW + seriesGap)
                           + (seriesW / 2.0) - (state.getBarWidth() / 2.0);
         }
@@ -971,12 +970,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     protected double calculateSeriesWidth(double space, CategoryAxis axis,
                                           int categories, int series) {
-        double factor = 1.0 - getItemMargin() - axis.getLowerMargin()
-                            - axis.getUpperMargin();
-        if (categories > 1) {
-            factor = factor - axis.getCategoryMargin();
-        }
-        return (space * factor) / (categories * series);
+        return axis.calculateSeriesWidth(space, categories, series, itemMargin);
     }
 
     /**

@@ -28,9 +28,12 @@
 
 package org.jfree.chart.api;
 
+import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import org.jfree.chart.internal.Args;
+import org.jfree.chart.plot.PlotOrientation;
 
 /**
  * Represents the insets for a rectangle, specified in absolute or relative 
@@ -519,6 +522,49 @@ public class RectangleInsets implements Serializable {
         double b = calculateBottomInset(h);
         area.setRect(area.getX() + l, area.getY() + t, w - l - r, h - t - b);    
     }
+
+	/**
+	 * Calculates the  {@code  (x, y)}  coordinates for drawing a marker label.
+	 * @param g2   the graphics device.
+	 * @param orientation   the plot orientation.
+	 * @param dataArea   the data area.
+	 * @param markerArea   the rectangle surrounding the marker area.
+	 * @param labelOffsetType   the label offset type.
+	 * @param anchor   the label anchor.
+	 * @return  The coordinates for drawing the marker label.
+	 */
+	public Point2D calculateDomainMarkerTextAnchorPoint(Graphics2D g2, PlotOrientation orientation,
+			Rectangle2D dataArea, Rectangle2D markerArea, LengthAdjustmentType labelOffsetType,
+			RectangleAnchor anchor) {
+		Rectangle2D anchorRect = null;
+		if (orientation == PlotOrientation.HORIZONTAL) {
+			anchorRect = createAdjustedRectangle(markerArea, LengthAdjustmentType.CONTRACT, labelOffsetType);
+		} else if (orientation == PlotOrientation.VERTICAL) {
+			anchorRect = createAdjustedRectangle(markerArea, labelOffsetType, LengthAdjustmentType.CONTRACT);
+		}
+		return anchor.getAnchorPoint(anchorRect);
+	}
+
+	/**
+	 * Calculates the (x, y) coordinates for drawing a marker label.
+	 * @param g2   the graphics device.
+	 * @param orientation   the plot orientation.
+	 * @param dataArea   the data area.
+	 * @param markerArea   the marker area.
+	 * @param labelOffsetForRange   ??
+	 * @param anchor   the label anchor.
+	 * @return  The coordinates for drawing the marker label.
+	 */
+	public Point2D calculateRangeMarkerTextAnchorPoint(Graphics2D g2, PlotOrientation orientation, Rectangle2D dataArea,
+			Rectangle2D markerArea, LengthAdjustmentType labelOffsetForRange, RectangleAnchor anchor) {
+		Rectangle2D anchorRect = null;
+		if (orientation == PlotOrientation.HORIZONTAL) {
+			anchorRect = createAdjustedRectangle(markerArea, labelOffsetForRange, LengthAdjustmentType.CONTRACT);
+		} else if (orientation == PlotOrientation.VERTICAL) {
+			anchorRect = createAdjustedRectangle(markerArea, LengthAdjustmentType.CONTRACT, labelOffsetForRange);
+		}
+		return anchor.getAnchorPoint(anchorRect);
+	}
     
 }
 
