@@ -1164,9 +1164,8 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateRangeMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateRangeMarkerTextAnchorPoint(
                         g2, orientation, dataArea, line.getBounds2D(),
-                        marker.getLabelOffset(),
                         LengthAdjustmentType.EXPAND, anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1267,9 +1266,9 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             if (label != null) {
                 Font labelFont = marker.getLabelFont();
                 g2.setFont(labelFont);
-                Point2D coords = calculateRangeMarkerTextAnchorPoint(
+                Point2D coords = marker.getLabelOffset().calculateRangeMarkerTextAnchorPoint(
                         g2, orientation, dataArea, rect,
-                        marker.getLabelOffset(), marker.getLabelOffsetType(),
+                        marker.getLabelOffsetType(),
                         anchor);
                 Rectangle2D r = TextUtils.calcAlignedStringBounds(label, 
                         g2, (float) coords.getX(), (float) coords.getY(), 
@@ -1283,37 +1282,6 @@ public abstract class AbstractXYItemRenderer extends AbstractRenderer
             }
             g2.setComposite(originalComposite);
         }
-    }
-
-    /**
-     * Calculates the (x, y) coordinates for drawing a marker label.
-     *
-     * @param g2  the graphics device.
-     * @param orientation  the plot orientation.
-     * @param dataArea  the data area.
-     * @param markerArea  the marker area.
-     * @param markerOffset  the marker offset.
-     * @param labelOffsetForRange  ??
-     * @param anchor  the label anchor.
-     *
-     * @return The coordinates for drawing the marker label.
-     */
-    private Point2D calculateRangeMarkerTextAnchorPoint(Graphics2D g2,
-           PlotOrientation orientation, Rectangle2D dataArea,
-           Rectangle2D markerArea, RectangleInsets markerOffset,
-           LengthAdjustmentType labelOffsetForRange, RectangleAnchor anchor) {
-
-        Rectangle2D anchorRect = null;
-        if (orientation == PlotOrientation.HORIZONTAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    labelOffsetForRange, LengthAdjustmentType.CONTRACT);
-        }
-        else if (orientation == PlotOrientation.VERTICAL) {
-            anchorRect = markerOffset.createAdjustedRectangle(markerArea,
-                    LengthAdjustmentType.CONTRACT, labelOffsetForRange);
-        }
-        return anchor.getAnchorPoint(anchorRect);
-
     }
 
     /**
