@@ -574,9 +574,8 @@ public class DialValueIndicator extends AbstractDialLayer implements DialLayer,
         double maxW = Double.MAX_VALUE;
         double maxH = Double.MAX_VALUE;
         if (this.maxTemplateValue != null) {
-            s = this.formatter.format(this.maxTemplateValue);
-            tb = TextUtils.getTextBounds(s, g2, fm);
-            maxW = Math.max(tb.getWidth(), minW);
+            tb = tb(g2, fm, s, tb);
+			maxW = Math.max(tb.getWidth(), minW);
             maxH = Math.max(tb.getHeight(), minH);
         }
         double w = fixToRange(valueBounds.getWidth(), minW, maxW);
@@ -610,6 +609,12 @@ public class DialValueIndicator extends AbstractDialLayer implements DialLayer,
         g2.setClip(savedClip);
 
     }
+
+	private Rectangle2D tb(Graphics2D g2, FontMetrics fm, String s, Rectangle2D tb) {
+		s = this.formatter.format(this.maxTemplateValue);
+		tb = TextUtils.getTextBounds(s, g2, fm);
+		return tb;
+	}
 
     /**
      * A utility method that adjusts a value, if necessary, to be within a 

@@ -352,50 +352,13 @@ public class MultiplePiePlot extends Plot implements Cloneable, Serializable {
             return;
         }
 
-        int pieCount;
-        if (this.dataExtractOrder == TableOrder.BY_ROW) {
-            pieCount = this.dataset.getRowCount();
-        }
-        else {
-            pieCount = this.dataset.getColumnCount();
-        }
-
-        // the columns variable is always >= rows
-        int displayCols = (int) Math.ceil(Math.sqrt(pieCount));
-        int displayRows
-            = (int) Math.ceil((double) pieCount / (double) displayCols);
-
-        // swap rows and columns to match plotArea shape
-        if (displayCols > displayRows && area.getWidth() < area.getHeight()) {
-            int temp = displayCols;
-            displayCols = displayRows;
-            displayRows = temp;
-        }
-
-        prefetchSectionPaints();
-
-        int x = (int) area.getX();
-        int y = (int) area.getY();
-        int width = ((int) area.getWidth()) / displayCols;
-        int height = ((int) area.getHeight()) / displayRows;
-        int row = 0;
-        int column = 0;
-        int diff = (displayRows * displayCols) - pieCount;
-        int xoffset = 0;
-        Rectangle rect = new Rectangle();
+        Rectangle rect = rect(area);
+		int pieCount = pieCount();
+		prefetchSectionPaints();
 
         for (int pieIndex = 0; pieIndex < pieCount; pieIndex++) {
-            rect.setBounds(x + xoffset + (width * column), y + (height * row),
-                    width, height);
-
-            String title;
-            if (this.dataExtractOrder == TableOrder.BY_ROW) {
-                title = this.dataset.getRowKey(pieIndex).toString();
-            }
-            else {
-                title = this.dataset.getColumnKey(pieIndex).toString();
-            }
-            this.pieChart.setTitle(title);
+            String title = title(pieIndex);
+			this.pieChart.setTitle(title);
 
             PieDataset piedataset;
             PieDataset dd = new CategoryToPieDataset(this.dataset,
@@ -413,14 +376,8 @@ public class MultiplePiePlot extends Plot implements Cloneable, Serializable {
 
             // update the section colors to match the global colors...
             for (int i = 0; i < piedataset.getItemCount(); i++) {
-                Comparable key = piedataset.getKey(i);
-                Paint p;
-                if (key.equals(this.aggregatedItemsKey)) {
-                    p = this.aggregatedItemsPaint;
-                }
-                else {
-                    p = (Paint) this.sectionPaints.get(key);
-                }
+                Paint p = p(piedataset, i);
+				Comparable key = piedataset.getKey(i);
                 piePlot.setSectionPaint(key, p);
             }
 
@@ -435,19 +392,77 @@ public class MultiplePiePlot extends Plot implements Cloneable, Serializable {
                         subinfo.getEntityCollection());
                 info.addSubplotInfo(subinfo.getPlotInfo());
             }
-
-            ++column;
-            if (column == displayCols) {
-                column = 0;
-                ++row;
-
-                if (row == displayRows - 1 && diff != 0) {
-                    xoffset = (diff * width) / 2;
-                }
-            }
         }
 
     }
+
+	private Paint p(PieDataset piedataset, int i) {
+		Comparable key = piedataset.getKey(i);
+		Paint p;
+		if (key.equals(this.aggregatedItemsKey)) {
+			p = this.aggregatedItemsPaint;
+		} else {
+			p = (Paint) this.sectionPaints.get(key);
+		}
+		return p;
+	}
+
+	private String title(int pieIndex) {
+		String title;
+		if (this.dataExtractOrder == TableOrder.BY_ROW) {
+			title = this.dataset.getRowKey(pieIndex).toString();
+		} else {
+			title = this.dataset.getColumnKey(pieIndex).toString();
+		}
+		return title;
+	}
+
+	private int pieCount() {
+		int pieCount;
+		if (this.dataExtractOrder == TableOrder.BY_ROW) {
+			pieCount = this.dataset.getRowCount();
+		} else {
+			pieCount = this.dataset.getColumnCount();
+		}
+		return pieCount;
+	}
+
+	private Rectangle rect(Rectangle2D area) {
+		int pieCount;
+		if (this.dataExtractOrder == TableOrder.BY_ROW) {
+			pieCount = this.dataset.getRowCount();
+		} else {
+			pieCount = this.dataset.getColumnCount();
+		}
+		int displayCols = (int) Math.ceil(Math.sqrt(pieCount));
+		int displayRows = (int) Math.ceil((double) pieCount / (double) displayCols);
+		if (displayCols > displayRows && area.getWidth() < area.getHeight()) {
+			int temp = displayCols;
+			displayCols = displayRows;
+			displayRows = temp;
+		}
+		int x = (int) area.getX();
+		int y = (int) area.getY();
+		int width = ((int) area.getWidth()) / displayCols;
+		int height = ((int) area.getHeight()) / displayRows;
+		int row = 0;
+		int column = 0;
+		int diff = (displayRows * displayCols) - pieCount;
+		int xoffset = 0;
+		Rectangle rect = new Rectangle();
+		for (int pieIndex = 0; pieIndex < pieCount; pieIndex++) {
+			rect.setBounds(x + xoffset + (width * column), y + (height * row), width, height);
+			++column;
+			if (column == displayCols) {
+				column = 0;
+				++row;
+				if (row == displayRows - 1 && diff != 0) {
+					xoffset = (diff * width) / 2;
+				}
+			}
+		}
+		return rect;
+	}
 
     /**
      * For each key in the dataset, check the {@code sectionPaints}

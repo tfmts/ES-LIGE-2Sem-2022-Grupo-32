@@ -548,11 +548,8 @@ public class CompassPlot extends Plot implements Cloneable, Serializable {
         int x1, y1, x2, y2;
         double a;
 
-        if (info != null) {
-            info.setPlotArea(area);
-        }
-
-        // adjust for insets...
+        info(area, info);
+		// adjust for insets...
         RectangleInsets insets = getInsets();
         insets.trim(area);
 
@@ -561,13 +558,9 @@ public class CompassPlot extends Plot implements Cloneable, Serializable {
             drawBackground(g2, area);
         }
 
-        int midX = (int) (area.getWidth() / 2);
+        int radius = radius(area);
+		int midX = (int) (area.getWidth() / 2);
         int midY = (int) (area.getHeight() / 2);
-        int radius = midX;
-        if (midY < midX) {
-            radius = midY;
-        }
-        --radius;
         int diameter = 2 * radius;
 
         midX += (int) area.getMinX();
@@ -579,10 +572,8 @@ public class CompassPlot extends Plot implements Cloneable, Serializable {
             diameter - 30, diameter - 30
         );
         g2.setPaint(this.rosePaint);
-        this.a1 = new Area(this.circle1);
-        this.a2 = new Area(this.circle2);
-        this.a1.subtract(this.a2);
-        g2.fill(this.a1);
+        a1();
+		g2.fill(this.a1);
 
         g2.setPaint(this.roseCenterPaint);
         x1 = diameter - 30;
@@ -668,6 +659,29 @@ public class CompassPlot extends Plot implements Cloneable, Serializable {
         }
 
     }
+
+	private void info(Rectangle2D area, PlotRenderingInfo info) {
+		if (info != null) {
+			info.setPlotArea(area);
+		}
+	}
+
+	private void a1() {
+		this.a1 = new Area(this.circle1);
+		this.a2 = new Area(this.circle2);
+		this.a1.subtract(this.a2);
+	}
+
+	private int radius(Rectangle2D area) {
+		int midX = (int) (area.getWidth() / 2);
+		int midY = (int) (area.getHeight() / 2);
+		int radius = midX;
+		if (midY < midX) {
+			radius = midY;
+		}
+		--radius;
+		return radius;
+	}
 
     /**
      * Returns a short string describing the type of plot.
