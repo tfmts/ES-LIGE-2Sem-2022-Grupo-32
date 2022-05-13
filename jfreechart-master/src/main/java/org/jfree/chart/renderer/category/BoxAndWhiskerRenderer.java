@@ -702,32 +702,10 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         drawHorizontalItem_refactoring(g2, state, dataArea, rangeAxis, row, column, bawDataset, yy, location);
 
         // draw median...
-        drawHorizontalItem_refactoring2(g2, state, dataArea, rangeAxis, dataset, row, column, bawDataset, yy, location,
-				box);
+        state.drawHorizontalItem_refactoring2(g2, dataArea, rangeAxis, dataset, row, column, bawDataset, yy, location,
+				box, medianVisible, this);
 
     }
-
-	protected void drawHorizontalItem_refactoring2(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea,
-			ValueAxis rangeAxis, CategoryDataset dataset, int row, int column, BoxAndWhiskerCategoryDataset bawDataset,
-			double yy, RectangleEdge location, Shape box) {
-		if (this.medianVisible) {
-            Number xMedian = bawDataset.getMedianValue(row, column);
-            if (xMedian != null) {
-                double xxMedian = rangeAxis.valueToJava2D(xMedian.doubleValue(),
-                        dataArea, location);
-                g2.draw(new Line2D.Double(xxMedian, yy, xxMedian,
-                        yy + state.getBarWidth()));
-            }
-        }
-
-        // collect entity and tool tip information...
-        if (state.getInfo() != null && box != null) {
-            EntityCollection entities = state.getEntityCollection();
-            if (entities != null) {
-                addItemEntity(entities, dataset, row, column, box);
-            }
-        }
-	}
 
 	protected void drawHorizontalItem_refactoring(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea,
 			ValueAxis rangeAxis, int row, int column, BoxAndWhiskerCategoryDataset bawDataset, double yy,

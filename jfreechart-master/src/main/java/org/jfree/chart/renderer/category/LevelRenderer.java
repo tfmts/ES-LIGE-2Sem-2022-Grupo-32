@@ -253,7 +253,8 @@ public class LevelRenderer extends AbstractCategoryItemRenderer
         if (seriesCount > 1) {
             double seriesGap = space * getItemMargin()
                     / (categoryCount * (seriesCount - 1));
-            double seriesW = domainAxis.calculateSeriesWidth(space, categoryCount, seriesCount, itemMargin);
+            double seriesW = calculateSeriesWidth(space, domainAxis,
+                    categoryCount, seriesCount);
             barW0 = barW0 + row * (seriesW + seriesGap)
                           + (seriesW / 2.0) - (state.getBarWidth() / 2.0);
         } else {
@@ -353,6 +354,26 @@ public class LevelRenderer extends AbstractCategoryItemRenderer
             addItemEntity(entities, dataset, row, column, line.getBounds());
         }
 
+    }
+
+    /**
+     * Calculates the available space for each series.
+     *
+     * @param space  the space along the entire axis (in Java2D units).
+     * @param axis  the category axis.
+     * @param categories  the number of categories.
+     * @param series  the number of series.
+     *
+     * @return The width of one series.
+     */
+    protected double calculateSeriesWidth(double space, CategoryAxis axis,
+                                          int categories, int series) {
+        double factor = 1.0 - getItemMargin() - axis.getLowerMargin()
+                        - axis.getUpperMargin();
+        if (categories > 1) {
+            factor = factor - axis.getCategoryMargin();
+        }
+        return (space * factor) / (categories * series);
     }
 
     /**

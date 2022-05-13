@@ -36,9 +36,18 @@
 
 package org.jfree.chart.renderer.category;
 
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import org.jfree.chart.api.RectangleEdge;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.CategoryCrosshairState;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.renderer.RendererState;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 
 /**
  * An object that retains temporary state information for a
@@ -201,5 +210,43 @@ public class CategoryItemRendererState extends RendererState {
     public void setVisibleSeriesArray(int[] visibleSeries) {
         this.visibleSeries = visibleSeries;
     }
+
+	public Rectangle2D drawVerticalItem_refactoring(Graphics2D g2, CategoryDataset dataset, int row, int column,
+			double rectX, int seriesCount, double rectY, double rectHeight, double shift, double widthFactor,
+			double seriesBarWidth, LayeredBarRenderer layeredBarRenderer) {
+		double rectWidth;
+		if (!Double.isNaN(seriesBarWidth)) {
+			widthFactor = seriesBarWidth;
+		}
+		rectWidth = widthFactor * getBarWidth();
+		rectX = rectX + (1 - widthFactor) * getBarWidth() / 2.0;
+		if (seriesCount > 1) {
+			shift = rectWidth * 0.20 / (seriesCount - 1);
+		}
+		Rectangle2D bar = new Rectangle2D.Double((rectX + ((seriesCount - 1 - row) * shift)), rectY,
+				(rectWidth - (seriesCount - 1 - row) * shift * 2), rectHeight);
+		if (getElementHinting()) {
+			layeredBarRenderer.beginElementGroup(g2, dataset.getRowKey(row), dataset.getColumnKey(column));
+		}
+		return bar;
+	}
+
+	public void drawHorizontalItem_refactoring2(Graphics2D g2, Rectangle2D dataArea, ValueAxis rangeAxis,
+			CategoryDataset dataset, int row, int column, BoxAndWhiskerCategoryDataset bawDataset, double yy,
+			RectangleEdge location, Shape box, boolean medianVisible, BoxAndWhiskerRenderer boxAndWhiskerRenderer) {
+		if (medianVisible) {
+			Number xMedian = bawDataset.getMedianValue(row, column);
+			if (xMedian != null) {
+				double xxMedian = rangeAxis.valueToJava2D(xMedian.doubleValue(), dataArea, location);
+				g2.draw(new Line2D.Double(xxMedian, yy, xxMedian, yy + getBarWidth()));
+			}
+		}
+		if (getInfo() != null && box != null) {
+			EntityCollection entities = getEntityCollection();
+			if (entities != null) {
+				boxAndWhiskerRenderer.addItemEntity(entities, dataset, row, column, box);
+			}
+		}
+	}
 
 }
