@@ -57,6 +57,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Paint;
@@ -71,6 +72,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1447,7 +1449,25 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
                 drawHeight);
 
         // are we using the chart buffer?
-        if (this.useBuffer) {
+        paintComponentRefactoring1(g, g2, insets, available, scale, chartArea);
+
+        for (Overlay overlay : this.overlays) {
+            overlay.paintOverlay(g2, this);
+        }
+
+        // redraw the zoom rectangle (if present) - if useBuffer is false,
+        // we use XOR so we can XOR the rectangle away again without redrawing
+        // the chart
+        selectionZoomStrategy.drawZoomRectangle(g2, !this.useBuffer);
+
+        g2.dispose();
+
+        this.anchor = null;
+    }
+
+	public void paintComponentRefactoring1(Graphics g, Graphics2D g2, Insets insets, Rectangle2D available,
+			boolean scale, Rectangle2D chartArea) {
+		if (this.useBuffer) {
 
             // for better rendering on the HiDPI monitors upscaling the buffer to the "native" resoution
             // instead of using logical one provided by Swing
@@ -1523,20 +1543,7 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             g2.setTransform(saved);
 
         }
-
-        for (Overlay overlay : this.overlays) {
-            overlay.paintOverlay(g2, this);
-        }
-
-        // redraw the zoom rectangle (if present) - if useBuffer is false,
-        // we use XOR so we can XOR the rectangle away again without redrawing
-        // the chart
-        selectionZoomStrategy.drawZoomRectangle(g2, !this.useBuffer);
-
-        g2.dispose();
-
-        this.anchor = null;
-    }
+	}
 
     /**
      * Receives notification of changes to the chart, and redraws the chart.
@@ -1734,24 +1741,28 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             }
         }
         else if (!this.selectionZoomStrategy.isActivated()) {
-            if ((mods & MODIFIERS_EX_MASK) == zoomButtonMasks.getOrDefault(button, zoomMask)) {
-                Rectangle2D screenDataArea = getScreenDataArea(e.getX(), e.getY());
-                if (screenDataArea != null) {
-                Point2D zoomPoint = getPointInRectangle(e.getX(), e.getY(),
-                            screenDataArea);
-                selectionZoomStrategy.setZoomPoint(zoomPoint);
-                }
-                else {
-                selectionZoomStrategy.setZoomPoint(null);
-                }
-            }
-            if (e.isPopupTrigger()) {
-                if (this.popup != null) {
-                    displayPopupMenu(e.getX(), e.getY());
-                }
-            }
+            mousePressedRefactoring1(e, button, mods);
         }
     }
+
+	public void mousePressedRefactoring1(MouseEvent e, int button, int mods) {
+		if ((mods & MODIFIERS_EX_MASK) == zoomButtonMasks.getOrDefault(button, zoomMask)) {
+		    Rectangle2D screenDataArea = getScreenDataArea(e.getX(), e.getY());
+		    if (screenDataArea != null) {
+		    Point2D zoomPoint = getPointInRectangle(e.getX(), e.getY(),
+		                screenDataArea);
+		    selectionZoomStrategy.setZoomPoint(zoomPoint);
+		    }
+		    else {
+		    selectionZoomStrategy.setZoomPoint(null);
+		    }
+		}
+		if (e.isPopupTrigger()) {
+		    if (this.popup != null) {
+		        displayPopupMenu(e.getX(), e.getY());
+		    }
+		}
+	}
 
     /**
      * Returns a point based on (x, y) but constrained to be within the bounds
@@ -1825,22 +1836,8 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             selectionZoomStrategy.drawZoomRectangle(g2, true);
         }
 
-        boolean hZoom, vZoom;
-        if (this.orientation == PlotOrientation.HORIZONTAL) {
-            hZoom = this.rangeZoomable;
-            vZoom = this.domainZoomable;
-        }
-        else {
-            hZoom = this.domainZoomable;
-            vZoom = this.rangeZoomable;
-        }
-        Point2D zoomPoint = this.selectionZoomStrategy.getZoomPoint();
-        Rectangle2D scaledDataArea = getScreenDataArea(
-                (int) zoomPoint.getX(), (int) zoomPoint.getY());
-
-        selectionZoomStrategy.updateZoomRectangleSelection(e, hZoom, vZoom, scaledDataArea);
-
-        // Draw the new zoom rectangle...
+        mouseDraggedRefactoring1(e);
+		// Draw the new zoom rectangle...
         if (this.useBuffer) {
             repaint();
         }
@@ -1852,6 +1849,20 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
         g2.dispose();
 
     }
+
+	private void mouseDraggedRefactoring1(MouseEvent e) {
+		boolean hZoom, vZoom;
+		if (this.orientation == PlotOrientation.HORIZONTAL) {
+			hZoom = this.rangeZoomable;
+			vZoom = this.domainZoomable;
+		} else {
+			hZoom = this.domainZoomable;
+			vZoom = this.rangeZoomable;
+		}
+		Point2D zoomPoint = this.selectionZoomStrategy.getZoomPoint();
+		Rectangle2D scaledDataArea = getScreenDataArea((int) zoomPoint.getX(), (int) zoomPoint.getY());
+		selectionZoomStrategy.updateZoomRectangleSelection(e, hZoom, vZoom, scaledDataArea);
+	}
 
     /**
      * Handles a 'mouse released' event.  On Windows, we need to check if this
@@ -1886,33 +1897,7 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
                 - zoomPoint.getX()) >= this.selectionZoomStrategy.getZoomTriggerDistance();
             boolean zoomTrigger2 = vZoom && Math.abs(e.getY()
                 - zoomPoint.getY()) >= this.selectionZoomStrategy.getZoomTriggerDistance();
-            if (zoomTrigger1 || zoomTrigger2) {
-                if ((hZoom && (e.getX() < zoomPoint.getX()))
-                    || (vZoom && (e.getY() < zoomPoint.getY()))) {
-                    restoreAutoBounds();
-                }
-                else {
-                    Rectangle2D screenDataArea = getScreenDataArea(
-                            (int) zoomPoint.getX(),
-                            (int) zoomPoint.getY());
-
-                    Rectangle2D zoomArea = selectionZoomStrategy.getZoomRectangle(hZoom, vZoom, screenDataArea);
-                    zoom(zoomArea);
-                }
-                this.selectionZoomStrategy.reset();
-            }
-            else {
-                // erase the zoom rectangle
-                Graphics2D g2 = (Graphics2D) getGraphics();
-                if (this.useBuffer) {
-                    repaint();
-                }
-                else {
-                    selectionZoomStrategy.drawZoomRectangle(g2, true);
-                }
-                g2.dispose();
-                this.selectionZoomStrategy.reset();
-            }
+            mouseReleasedRefactoring1(e, hZoom, vZoom, zoomPoint, zoomTrigger1, zoomTrigger2);
 
         }
 
@@ -1923,6 +1908,37 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
         }
 
     }
+
+	public void mouseReleasedRefactoring1(MouseEvent e, boolean hZoom, boolean vZoom, Point2D zoomPoint,
+			boolean zoomTrigger1, boolean zoomTrigger2) {
+		if (zoomTrigger1 || zoomTrigger2) {
+		    if ((hZoom && (e.getX() < zoomPoint.getX()))
+		        || (vZoom && (e.getY() < zoomPoint.getY()))) {
+		        restoreAutoBounds();
+		    }
+		    else {
+		        Rectangle2D screenDataArea = getScreenDataArea(
+		                (int) zoomPoint.getX(),
+		                (int) zoomPoint.getY());
+
+		        Rectangle2D zoomArea = selectionZoomStrategy.getZoomRectangle(hZoom, vZoom, screenDataArea);
+		        zoom(zoomArea);
+		    }
+		    this.selectionZoomStrategy.reset();
+		}
+		else {
+		    // erase the zoom rectangle
+		    Graphics2D g2 = (Graphics2D) getGraphics();
+		    if (this.useBuffer) {
+		        repaint();
+		    }
+		    else {
+		        selectionZoomStrategy.drawZoomRectangle(g2, true);
+		    }
+		    g2.dispose();
+		    this.selectionZoomStrategy.reset();
+		}
+	}
 
     /**
      * Receives notification of mouse clicks on the panel. These are
@@ -2495,39 +2511,8 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
      * @throws IOException if there is an exception.
      */
     protected void saveAsSVG(File f) throws IOException {
-        File file = f;
-        if (file == null) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(this.defaultDirectoryForSaveAs);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    localizationResources.getString("SVG_Files"), "svg");
-            fileChooser.addChoosableFileFilter(filter);
-            fileChooser.setFileFilter(filter);
-
-            int option = fileChooser.showSaveDialog(this);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                String filename = fileChooser.getSelectedFile().getPath();
-                if (isEnforceFileExtensions()) {
-                    if (!filename.endsWith(".svg")) {
-                        filename = filename + ".svg";
-                    }
-                }
-                file = new File(filename);
-                if (file.exists()) {
-                    String fileExists = localizationResources.getString(
-                            "FILE_EXISTS_CONFIRM_OVERWRITE");
-                    int response = JOptionPane.showConfirmDialog(this, 
-                            fileExists,
-                            localizationResources.getString("Save_as_SVG"),
-                            JOptionPane.OK_CANCEL_OPTION);
-                    if (response == JOptionPane.CANCEL_OPTION) {
-                        file = null;
-                    }
-                }
-            }
-        }
-        
-        if (file != null) {
+        File file = saveAsSVGRefactoring1(f);
+		if (file != null) {
             // use reflection to get the SVG string
             String svg = generateSVG(getWidth(), getHeight());
             BufferedWriter writer = null;
@@ -2552,6 +2537,37 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             }
         }
     }
+
+	private File saveAsSVGRefactoring1(File f) throws HeadlessException {
+		File file = f;
+		if (file == null) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setCurrentDirectory(this.defaultDirectoryForSaveAs);
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(localizationResources.getString("SVG_Files"),
+					"svg");
+			fileChooser.addChoosableFileFilter(filter);
+			fileChooser.setFileFilter(filter);
+			int option = fileChooser.showSaveDialog(this);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				String filename = fileChooser.getSelectedFile().getPath();
+				if (isEnforceFileExtensions()) {
+					if (!filename.endsWith(".svg")) {
+						filename = filename + ".svg";
+					}
+				}
+				file = new File(filename);
+				if (file.exists()) {
+					String fileExists = localizationResources.getString("FILE_EXISTS_CONFIRM_OVERWRITE");
+					int response = JOptionPane.showConfirmDialog(this, fileExists,
+							localizationResources.getString("Save_as_SVG"), JOptionPane.OK_CANCEL_OPTION);
+					if (response == JOptionPane.CANCEL_OPTION) {
+						file = null;
+					}
+				}
+			}
+		}
+		return file;
+	}
     
     /**
      * Generates a string containing a rendering of the chart in SVG format.
@@ -2818,51 +2834,7 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             separator = !save;
         }
 
-        if (save) {
-            if (separator) {
-                result.addSeparator();
-            }
-
-            JMenu saveSubMenu = new JMenu(localizationResources.getString("Save_as"));
-
-            // PNG - current res
-            {
-                JMenuItem pngItem = new JMenuItem(localizationResources.getString(
-                        "PNG..."));
-                pngItem.setActionCommand(SAVE_AS_PNG_COMMAND);
-                pngItem.addActionListener(this);
-                saveSubMenu.add(pngItem);
-
-            }
-
-            // PNG - screen res
-            {
-            	final Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
-                final String pngName = "PNG ("+ss.width+"x"+ss.height+") ...";
-                JMenuItem pngItem = new JMenuItem(pngName);
-                pngItem.setActionCommand(SAVE_AS_PNG_SIZE_COMMAND);
-                pngItem.addActionListener(this);
-                saveSubMenu.add(pngItem);
-            }
-            
-            if (ChartUtils.isJFreeSVGAvailable()) {
-                JMenuItem svgItem = new JMenuItem(localizationResources.getString(
-                        "SVG..."));
-                svgItem.setActionCommand(SAVE_AS_SVG_COMMAND);
-                svgItem.addActionListener(this);
-                saveSubMenu.add(svgItem);                
-            }
-            
-            if (ChartUtils.isOrsonPDFAvailable()) {
-                JMenuItem pdfItem = new JMenuItem(
-                        localizationResources.getString("PDF..."));
-                pdfItem.setActionCommand(SAVE_AS_PDF_COMMAND);
-                pdfItem.addActionListener(this);
-                saveSubMenu.add(pdfItem);
-            }
-            result.add(saveSubMenu);
-            separator = true;
-        }
+        separator = createPopupMenuRefactoring1(save, result, separator);
 
         if (print) {
             if (separator) {
@@ -2966,6 +2938,55 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
 
     }
 
+	private boolean createPopupMenuRefactoring1(boolean save, JPopupMenu result, boolean separator) {
+		if (save) {
+            if (separator) {
+                result.addSeparator();
+            }
+
+            JMenu saveSubMenu = new JMenu(localizationResources.getString("Save_as"));
+
+            // PNG - current res
+            {
+                JMenuItem pngItem = new JMenuItem(localizationResources.getString(
+                        "PNG..."));
+                pngItem.setActionCommand(SAVE_AS_PNG_COMMAND);
+                pngItem.addActionListener(this);
+                saveSubMenu.add(pngItem);
+
+            }
+
+            // PNG - screen res
+            {
+            	final Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
+                final String pngName = "PNG ("+ss.width+"x"+ss.height+") ...";
+                JMenuItem pngItem = new JMenuItem(pngName);
+                pngItem.setActionCommand(SAVE_AS_PNG_SIZE_COMMAND);
+                pngItem.addActionListener(this);
+                saveSubMenu.add(pngItem);
+            }
+            
+            if (ChartUtils.isJFreeSVGAvailable()) {
+                JMenuItem svgItem = new JMenuItem(localizationResources.getString(
+                        "SVG..."));
+                svgItem.setActionCommand(SAVE_AS_SVG_COMMAND);
+                svgItem.addActionListener(this);
+                saveSubMenu.add(svgItem);                
+            }
+            
+            if (ChartUtils.isOrsonPDFAvailable()) {
+                JMenuItem pdfItem = new JMenuItem(
+                        localizationResources.getString("PDF..."));
+                pdfItem.setActionCommand(SAVE_AS_PDF_COMMAND);
+                pdfItem.addActionListener(this);
+                saveSubMenu.add(pdfItem);
+            }
+            result.add(saveSubMenu);
+            separator = true;
+        }
+		return separator;
+	}
+
     /**
      * The idea is to modify the zooming options depending on the type of chart
      * being displayed by the panel.
@@ -3007,7 +3028,14 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             this.zoomOutRangeMenuItem.setEnabled(isRangeZoomable);
         }
 
-        if (this.zoomResetRangeMenuItem != null) {
+        displayPopupMenuRefactoring1(isDomainZoomable, isRangeZoomable);
+
+        this.popup.show(this, x, y);
+
+    }
+
+	protected void displayPopupMenuRefactoring1(boolean isDomainZoomable, boolean isRangeZoomable) {
+		if (this.zoomResetRangeMenuItem != null) {
             this.zoomResetRangeMenuItem.setEnabled(isRangeZoomable);
         }
 
@@ -3023,10 +3051,7 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
             this.zoomResetBothMenuItem.setEnabled(isDomainZoomable
                     && isRangeZoomable);
         }
-
-        this.popup.show(this, x, y);
-
-    }
+	}
 
     /**
      * Updates the UI for a LookAndFeel change.
@@ -3073,6 +3098,36 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
         }
 
     }
+
+	/**
+	 * Handle the case where a plot implements the  {@link Zoomable}  interface.
+	 * @param zoomable   the zoomable plot.
+	 * @param e   the mouse wheel event.
+	 * @param zoomFactor
+	 */
+	public void handleZoomableRefactoring1(Zoomable zoomable, MouseWheelEvent e, double zoomFactor) {
+		ChartRenderingInfo info = getChartRenderingInfo();
+		PlotRenderingInfo pinfo = info.getPlotInfo();
+		Point2D p = translateScreenToJava2D(e.getPoint());
+		if (!pinfo.getDataArea().contains(p)) {
+			return;
+		}
+		Plot plot = (Plot) zoomable;
+		boolean notifyState = plot.isNotify();
+		plot.setNotify(false);
+		int clicks = e.getWheelRotation();
+		double zf = 1.0 + zoomFactor;
+		if (clicks < 0) {
+			zf = 1.0 / zf;
+		}
+		if (isDomainZoomable()) {
+			zoomable.zoomDomainAxes(zf, pinfo, p, true);
+		}
+		if (isRangeZoomable()) {
+			zoomable.zoomRangeAxes(zf, pinfo, p, true);
+		}
+		plot.setNotify(notifyState);
+	}
 
 }
 

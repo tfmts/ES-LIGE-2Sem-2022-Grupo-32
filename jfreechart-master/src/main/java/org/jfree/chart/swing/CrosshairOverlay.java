@@ -71,19 +71,17 @@ import org.jfree.chart.api.PublicCloneable;
 public class CrosshairOverlay extends AbstractOverlay implements Overlay,
         PropertyChangeListener, PublicCloneable, Cloneable, Serializable {
 
-    /** Storage for the crosshairs along the x-axis. */
-    protected List<Crosshair> xCrosshairs;
+    private CrosshairOverlayRefactoring2 crosshairOverlayRefactoring2 = new CrosshairOverlayRefactoring2();
 
-    /** Storage for the crosshairs along the y-axis. */
-    protected List<Crosshair> yCrosshairs;
+	private transient CrosshairOverlayRefactoring1 crosshairOverlayRefactoring1 = new CrosshairOverlayRefactoring1();
 
-    /**
+	/**
      * Creates a new overlay that initially contains no crosshairs.
      */
     public CrosshairOverlay() {
         super();
-        this.xCrosshairs = new ArrayList<>();
-        this.yCrosshairs = new ArrayList<>();
+        crosshairOverlayRefactoring2.setXCrosshairs(new ArrayList<>());
+        crosshairOverlayRefactoring2.setYCrosshairs(new ArrayList<>());
     }
 
     /**
@@ -96,10 +94,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @see #addRangeCrosshair(org.jfree.chart.plot.Crosshair)
      */
     public void addDomainCrosshair(Crosshair crosshair) {
-        Args.nullNotPermitted(crosshair, "crosshair");
-        this.xCrosshairs.add(crosshair);
-        crosshair.addPropertyChangeListener(this);
-        fireOverlayChanged();
+        crosshairOverlayRefactoring2.addDomainCrosshair(crosshair, this);
     }
 
     /**
@@ -111,11 +106,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @see #addDomainCrosshair(org.jfree.chart.plot.Crosshair)
      */
     public void removeDomainCrosshair(Crosshair crosshair) {
-        Args.nullNotPermitted(crosshair, "crosshair");
-        if (this.xCrosshairs.remove(crosshair)) {
-            crosshair.removePropertyChangeListener(this);
-            fireOverlayChanged();
-        }
+        crosshairOverlayRefactoring2.removeDomainCrosshair(crosshair, this);
     }
 
     /**
@@ -124,14 +115,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * were no crosshairs to begin with).
      */
     public void clearDomainCrosshairs() {
-        if (this.xCrosshairs.isEmpty()) {
-            return;  // nothing to do - avoids firing change event
-        }
-        for (Crosshair c : getDomainCrosshairs()) {
-            this.xCrosshairs.remove(c);
-            c.removePropertyChangeListener(this);
-        }
-        fireOverlayChanged();
+        crosshairOverlayRefactoring2.clearDomainCrosshairs(this);
     }
 
     /**
@@ -140,7 +124,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @return A list of crosshairs.
      */
     public List<Crosshair> getDomainCrosshairs() {
-        return new ArrayList<>(this.xCrosshairs);
+        return crosshairOverlayRefactoring2.getDomainCrosshairs();
     }
 
     /**
@@ -150,10 +134,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @param crosshair  the crosshair ({@code null} not permitted).
      */
     public void addRangeCrosshair(Crosshair crosshair) {
-        Args.nullNotPermitted(crosshair, "crosshair");
-        this.yCrosshairs.add(crosshair);
-        crosshair.addPropertyChangeListener(this);
-        fireOverlayChanged();
+        crosshairOverlayRefactoring2.addRangeCrosshair(crosshair, this);
     }
 
     /**
@@ -165,11 +146,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @see #addRangeCrosshair(org.jfree.chart.plot.Crosshair)
      */
     public void removeRangeCrosshair(Crosshair crosshair) {
-        Args.nullNotPermitted(crosshair, "crosshair");
-        if (this.yCrosshairs.remove(crosshair)) {
-            crosshair.removePropertyChangeListener(this);
-            fireOverlayChanged();
-        }
+        crosshairOverlayRefactoring2.removeRangeCrosshair(crosshair, this);
     }
 
     /**
@@ -178,14 +155,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * were no crosshairs to begin with).
      */
     public void clearRangeCrosshairs() {
-        if (this.yCrosshairs.isEmpty()) {
-            return;  // nothing to do - avoids change notification
-        }
-        for (Crosshair c : getRangeCrosshairs()) {
-            this.yCrosshairs.remove(c);
-            c.removePropertyChangeListener(this);
-        }
-        fireOverlayChanged();
+        crosshairOverlayRefactoring2.clearRangeCrosshairs(this);
     }
 
     /**
@@ -194,7 +164,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
      * @return A list of crosshairs.
      */
     public List<Crosshair> getRangeCrosshairs() {
-        return new ArrayList<>(this.yCrosshairs);
+        return crosshairOverlayRefactoring2.getRangeCrosshairs();
     }
 
     /**
@@ -226,27 +196,27 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
         XYPlot plot = (XYPlot) chart.getPlot();
         ValueAxis xAxis = plot.getDomainAxis();
         RectangleEdge xAxisEdge = plot.getDomainAxisEdge();
-        for (Crosshair ch : getDomainCrosshairs()) {
+        for (Crosshair ch : crosshairOverlayRefactoring2.getDomainCrosshairs()) {
             if (ch.isVisible()) {
                 double x = ch.getValue();
                 double xx = xAxis.valueToJava2D(x, dataArea, xAxisEdge);
                 if (plot.getOrientation() == PlotOrientation.VERTICAL) {
-                    drawVerticalCrosshair(g2, dataArea, xx, ch);
+                    crosshairOverlayRefactoring1.drawVerticalCrosshair(g2, dataArea, xx, ch);
                 } else {
-                    drawHorizontalCrosshair(g2, dataArea, xx, ch);
+                    crosshairOverlayRefactoring1.drawHorizontalCrosshair(g2, dataArea, xx, ch);
                 }
             }
         }
         ValueAxis yAxis = plot.getRangeAxis();
         RectangleEdge yAxisEdge = plot.getRangeAxisEdge();
-        for (Crosshair ch : getRangeCrosshairs()) {
+        for (Crosshair ch : crosshairOverlayRefactoring2.getRangeCrosshairs()) {
             if (ch.isVisible()) {
                 double y = ch.getValue();
                 double yy = yAxis.valueToJava2D(y, dataArea, yAxisEdge);
                 if (plot.getOrientation() == PlotOrientation.VERTICAL) {
-                    drawHorizontalCrosshair(g2, dataArea, yy, ch);
+                    crosshairOverlayRefactoring1.drawHorizontalCrosshair(g2, dataArea, yy, ch);
                 } else {
-                    drawVerticalCrosshair(g2, dataArea, yy, ch);
+                    crosshairOverlayRefactoring1.drawVerticalCrosshair(g2, dataArea, yy, ch);
                 }
             }
         }
@@ -264,52 +234,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
     protected void drawHorizontalCrosshair(Graphics2D g2, Rectangle2D dataArea,
             double y, Crosshair crosshair) {
 
-        if (y >= dataArea.getMinY() && y <= dataArea.getMaxY()) {
-            Line2D line = new Line2D.Double(dataArea.getMinX(), y,
-                    dataArea.getMaxX(), y);
-            Paint savedPaint = g2.getPaint();
-            Stroke savedStroke = g2.getStroke();
-            g2.setPaint(crosshair.getPaint());
-            g2.setStroke(crosshair.getStroke());
-            g2.draw(line);
-            if (crosshair.isLabelVisible()) {
-                String label = crosshair.getLabelGenerator().generateLabel(
-                        crosshair);
-                if (label != null && !label.isEmpty()) {
-                    Font savedFont = g2.getFont();
-                    g2.setFont(crosshair.getLabelFont());
-                    RectangleAnchor anchor = crosshair.getLabelAnchor();
-                    Point2D pt = calculateLabelPoint(line, anchor, crosshair.getLabelXOffset(), crosshair.getLabelYOffset());
-                    float xx = (float) pt.getX();
-                    float yy = (float) pt.getY();
-                    TextAnchor alignPt = textAlignPtForLabelAnchorH(anchor);
-                    Shape hotspot = TextUtils.calculateRotatedStringBounds(
-                            label, g2, xx, yy, alignPt, 0.0, TextAnchor.CENTER);
-                    if (!dataArea.contains(hotspot.getBounds2D())) {
-                        anchor = flipAnchorV(anchor);
-                        pt = calculateLabelPoint(line, anchor, crosshair.getLabelXOffset(), crosshair.getLabelYOffset());
-                        xx = (float) pt.getX();
-                        yy = (float) pt.getY();
-                        alignPt = textAlignPtForLabelAnchorH(anchor);
-                        hotspot = TextUtils.calculateRotatedStringBounds(
-                               label, g2, xx, yy, alignPt, 0.0, TextAnchor.CENTER);
-                    }
-
-                    g2.setPaint(crosshair.getLabelBackgroundPaint());
-                    g2.fill(hotspot);
-                    if (crosshair.isLabelOutlineVisible()) {
-                        g2.setPaint(crosshair.getLabelOutlinePaint());
-                        g2.setStroke(crosshair.getLabelOutlineStroke());
-                        g2.draw(hotspot);
-                    }
-                    g2.setPaint(crosshair.getLabelPaint());
-                    TextUtils.drawAlignedString(label, g2, xx, yy, alignPt);
-                    g2.setFont(savedFont);
-                }
-            }
-            g2.setPaint(savedPaint);
-            g2.setStroke(savedStroke);
-        }
+        crosshairOverlayRefactoring1.drawHorizontalCrosshair(g2, dataArea, y, crosshair);
     }
 
     /**
@@ -323,234 +248,7 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
     protected void drawVerticalCrosshair(Graphics2D g2, Rectangle2D dataArea,
             double x, Crosshair crosshair) {
 
-        if (x >= dataArea.getMinX() && x <= dataArea.getMaxX()) {
-            Line2D line = new Line2D.Double(x, dataArea.getMinY(), x,
-                    dataArea.getMaxY());
-            Paint savedPaint = g2.getPaint();
-            Stroke savedStroke = g2.getStroke();
-            g2.setPaint(crosshair.getPaint());
-            g2.setStroke(crosshair.getStroke());
-            g2.draw(line);
-            if (crosshair.isLabelVisible()) {
-                String label = crosshair.getLabelGenerator().generateLabel(
-                        crosshair);
-                if (label != null && !label.isEmpty()) {
-                    Font savedFont = g2.getFont();
-                    g2.setFont(crosshair.getLabelFont());
-                    RectangleAnchor anchor = crosshair.getLabelAnchor();
-                    Point2D pt = calculateLabelPoint(line, anchor, crosshair.getLabelXOffset(), crosshair.getLabelYOffset());
-                    float xx = (float) pt.getX();
-                    float yy = (float) pt.getY();
-                    TextAnchor alignPt = textAlignPtForLabelAnchorV(anchor);
-                    Shape hotspot = TextUtils.calculateRotatedStringBounds(
-                            label, g2, xx, yy, alignPt, 0.0, TextAnchor.CENTER);
-                    if (!dataArea.contains(hotspot.getBounds2D())) {
-                        anchor = flipAnchorH(anchor);
-                        pt = calculateLabelPoint(line, anchor, crosshair.getLabelXOffset(), crosshair.getLabelYOffset());
-                        xx = (float) pt.getX();
-                        yy = (float) pt.getY();
-                        alignPt = textAlignPtForLabelAnchorV(anchor);
-                        hotspot = TextUtils.calculateRotatedStringBounds(
-                               label, g2, xx, yy, alignPt, 0.0, TextAnchor.CENTER);
-                    }
-                    g2.setPaint(crosshair.getLabelBackgroundPaint());
-                    g2.fill(hotspot);
-                    if (crosshair.isLabelOutlineVisible()) {
-                        g2.setPaint(crosshair.getLabelOutlinePaint());
-                        g2.setStroke(crosshair.getLabelOutlineStroke());
-                        g2.draw(hotspot);
-                    }
-                    g2.setPaint(crosshair.getLabelPaint());
-                    TextUtils.drawAlignedString(label, g2, xx, yy, alignPt);
-                    g2.setFont(savedFont);
-                }
-            }
-            g2.setPaint(savedPaint);
-            g2.setStroke(savedStroke);
-        }
-    }
-
-    /**
-     * Calculates the anchor point for a label.
-     *
-     * @param line  the line for the crosshair.
-     * @param anchor  the anchor point.
-     * @param deltaX  the x-offset.
-     * @param deltaY  the y-offset.
-     *
-     * @return The anchor point.
-     */
-    private Point2D calculateLabelPoint(Line2D line, RectangleAnchor anchor,
-            double deltaX, double deltaY) {
-        double x, y;
-        boolean left = (anchor == RectangleAnchor.BOTTOM_LEFT 
-                || anchor == RectangleAnchor.LEFT 
-                || anchor == RectangleAnchor.TOP_LEFT);
-        boolean right = (anchor == RectangleAnchor.BOTTOM_RIGHT 
-                || anchor == RectangleAnchor.RIGHT 
-                || anchor == RectangleAnchor.TOP_RIGHT);
-        boolean top = (anchor == RectangleAnchor.TOP_LEFT 
-                || anchor == RectangleAnchor.TOP 
-                || anchor == RectangleAnchor.TOP_RIGHT);
-        boolean bottom = (anchor == RectangleAnchor.BOTTOM_LEFT
-                || anchor == RectangleAnchor.BOTTOM
-                || anchor == RectangleAnchor.BOTTOM_RIGHT);
-        Rectangle rect = line.getBounds();
-        
-        // we expect the line to be vertical or horizontal
-        if (line.getX1() == line.getX2()) {  // vertical
-            x = line.getX1();
-            y = (line.getY1() + line.getY2()) / 2.0;
-            if (left) {
-                x = x - deltaX;
-            }
-            if (right) {
-                x = x + deltaX;
-            }
-            if (top) {
-                y = Math.min(line.getY1(), line.getY2()) + deltaY;
-            }
-            if (bottom) {
-                y = Math.max(line.getY1(), line.getY2()) - deltaY;
-            }
-        }
-        else {  // horizontal
-            x = (line.getX1() + line.getX2()) / 2.0;
-            y = line.getY1();
-            if (left) {
-                x = Math.min(line.getX1(), line.getX2()) + deltaX;
-            }
-            if (right) {
-                x = Math.max(line.getX1(), line.getX2()) - deltaX;
-            }
-            if (top) {
-                y = y - deltaY;
-            }
-            if (bottom) {
-                y = y + deltaY;
-            }
-        }
-        return new Point2D.Double(x, y);
-    }
-
-    /**
-     * Returns the text anchor that is used to align a label to its anchor 
-     * point.
-     * 
-     * @param anchor  the anchor.
-     * 
-     * @return The text alignment point.
-     */
-    private TextAnchor textAlignPtForLabelAnchorV(RectangleAnchor anchor) {
-        TextAnchor result = TextAnchor.CENTER;
-        if (anchor.equals(RectangleAnchor.TOP_LEFT)) {
-            result = TextAnchor.TOP_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP)) {
-            result = TextAnchor.TOP_CENTER;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP_RIGHT)) {
-            result = TextAnchor.TOP_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.LEFT)) {
-            result = TextAnchor.HALF_ASCENT_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.RIGHT)) {
-            result = TextAnchor.HALF_ASCENT_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_LEFT)) {
-            result = TextAnchor.BOTTOM_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM)) {
-            result = TextAnchor.BOTTOM_CENTER;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_RIGHT)) {
-            result = TextAnchor.BOTTOM_LEFT;
-        }
-        return result;
-    }
-
-    /**
-     * Returns the text anchor that is used to align a label to its anchor
-     * point.
-     *
-     * @param anchor  the anchor.
-     *
-     * @return The text alignment point.
-     */
-    private TextAnchor textAlignPtForLabelAnchorH(RectangleAnchor anchor) {
-        TextAnchor result = TextAnchor.CENTER;
-        if (anchor.equals(RectangleAnchor.TOP_LEFT)) {
-            result = TextAnchor.BOTTOM_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP)) {
-            result = TextAnchor.BOTTOM_CENTER;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP_RIGHT)) {
-            result = TextAnchor.BOTTOM_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.LEFT)) {
-            result = TextAnchor.HALF_ASCENT_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.RIGHT)) {
-            result = TextAnchor.HALF_ASCENT_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_LEFT)) {
-            result = TextAnchor.TOP_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM)) {
-            result = TextAnchor.TOP_CENTER;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_RIGHT)) {
-            result = TextAnchor.TOP_RIGHT;
-        }
-        return result;
-    }
-
-    private RectangleAnchor flipAnchorH(RectangleAnchor anchor) {
-        RectangleAnchor result = anchor;
-        if (anchor.equals(RectangleAnchor.TOP_LEFT)) {
-            result = RectangleAnchor.TOP_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP_RIGHT)) {
-            result = RectangleAnchor.TOP_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.LEFT)) {
-            result = RectangleAnchor.RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.RIGHT)) {
-            result = RectangleAnchor.LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_LEFT)) {
-            result = RectangleAnchor.BOTTOM_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_RIGHT)) {
-            result = RectangleAnchor.BOTTOM_LEFT;
-        }
-        return result;
-    }
-
-    private RectangleAnchor flipAnchorV(RectangleAnchor anchor) {
-        RectangleAnchor result = anchor;
-        if (anchor.equals(RectangleAnchor.TOP_LEFT)) {
-            result = RectangleAnchor.BOTTOM_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP_RIGHT)) {
-            result = RectangleAnchor.BOTTOM_RIGHT;
-        }
-        else if (anchor.equals(RectangleAnchor.TOP)) {
-            result = RectangleAnchor.BOTTOM;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM)) {
-            result = RectangleAnchor.TOP;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_LEFT)) {
-            result = RectangleAnchor.TOP_LEFT;
-        }
-        else if (anchor.equals(RectangleAnchor.BOTTOM_RIGHT)) {
-            result = RectangleAnchor.TOP_RIGHT;
-        }
-        return result;
+        crosshairOverlayRefactoring1.drawVerticalCrosshair(g2, dataArea, x, crosshair);
     }
 
     /**
@@ -569,10 +267,10 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
             return false;
         }
         CrosshairOverlay that = (CrosshairOverlay) obj;
-        if (!this.xCrosshairs.equals(that.xCrosshairs)) {
+        if (!this.crosshairOverlayRefactoring2.getXCrosshairs().equals(that.crosshairOverlayRefactoring2.getXCrosshairs())) {
             return false;
         }
-        if (!this.yCrosshairs.equals(that.yCrosshairs)) {
+        if (!this.crosshairOverlayRefactoring2.getYCrosshairs().equals(that.crosshairOverlayRefactoring2.getYCrosshairs())) {
             return false;
         }
         return true;
@@ -589,9 +287,24 @@ public class CrosshairOverlay extends AbstractOverlay implements Overlay,
     @Override
     public Object clone() throws CloneNotSupportedException {
         CrosshairOverlay clone = (CrosshairOverlay) super.clone();
-        clone.xCrosshairs = (List) CloneUtils.cloneList(this.xCrosshairs);
-        clone.yCrosshairs = (List) CloneUtils.cloneList(this.yCrosshairs);
+		clone.crosshairOverlayRefactoring2 = (CrosshairOverlayRefactoring2) this.crosshairOverlayRefactoring2.clone();
+		clone.crosshairOverlayRefactoring1 = (CrosshairOverlayRefactoring1) this.crosshairOverlayRefactoring1.clone();
+        clone.crosshairOverlayRefactoring2
+				.setXCrosshairs((List) CloneUtils.cloneList(this.crosshairOverlayRefactoring2.getXCrosshairs()));
+        clone.crosshairOverlayRefactoring2
+				.setYCrosshairs((List) CloneUtils.cloneList(this.crosshairOverlayRefactoring2.getYCrosshairs()));
         return clone;
     }
+
+	private void readObject(java.io.ObjectInputStream stream)
+			throws java.io.IOException, java.lang.ClassNotFoundException {
+		stream.defaultReadObject();
+		this.crosshairOverlayRefactoring1 = (CrosshairOverlayRefactoring1) stream.readObject();
+	}
+
+	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+		stream.defaultWriteObject();
+		stream.writeObject(this.crosshairOverlayRefactoring1);
+	}
 
 }

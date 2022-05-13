@@ -65,26 +65,15 @@ import org.jfree.chart.api.RectangleInsets;
  */
 class DefaultAxisEditor extends JPanel implements ActionListener {
 
-    /** The axis label. */
-    private final JTextField label;
+    private DefaultAxisEditorRefactoring2 defaultAxisEditorRefactoring2;
 
-    /** The label font. */
-    private Font labelFont;
+	private DefaultAxisEditorRefactoring1 defaultAxisEditorRefactoring1;
+
+	/** The axis label. */
+    private final JTextField label;
 
     /** The label paint. */
     private final PaintSample labelPaintSample;
-
-    /** A field showing a description of the label font. */
-    private final JTextField labelFontField;
-
-    /** The font for displaying tick labels on the axis. */
-    private Font tickLabelFont;
-
-    /**
-     * A field containing a description of the font for displaying tick labels
-     * on the axis.
-     */
-    private final JTextField tickLabelFontField;
 
     /** The paint (color) for the tick labels. */
     private final PaintSample tickLabelPaintSample;
@@ -165,9 +154,9 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
      */
     public DefaultAxisEditor(Axis axis) {
 
-        this.labelFont = axis.getLabelFont();
+        defaultAxisEditorRefactoring1.setLabelFont(axis.getLabelFont());
         this.labelPaintSample = new PaintSample(axis.getLabelPaint());
-        this.tickLabelFont = axis.getTickLabelFont();
+        defaultAxisEditorRefactoring2.setTickLabelFont(axis.getTickLabelFont());
         this.tickLabelPaintSample = new PaintSample(axis.getTickLabelPaint());
 
         // Insets values
@@ -192,8 +181,8 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
         interior.add(new JPanel());
 
         interior.add(new JLabel(localizationResources.getString("Font")));
-        this.labelFontField = new FontDisplayField(this.labelFont);
-        interior.add(this.labelFontField);
+		this.defaultAxisEditorRefactoring1 = new DefaultAxisEditorRefactoring1(new FontDisplayField(this.getLabelFont()));
+        interior.add(this.defaultAxisEditorRefactoring1.getLabelFontField());
         JButton b = new JButton(localizationResources.getString("Select..."));
         b.setActionCommand("SelectLabelFont");
         b.addActionListener(this);
@@ -255,8 +244,9 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
         ticks.add(
             new JLabel(localizationResources.getString("Tick_label_font"))
         );
-        this.tickLabelFontField = new FontDisplayField(this.tickLabelFont);
-        ticks.add(this.tickLabelFontField);
+		this.defaultAxisEditorRefactoring2 = new DefaultAxisEditorRefactoring2(
+				new FontDisplayField(this.getLabelFont()));
+        ticks.add(this.defaultAxisEditorRefactoring2.getTickLabelFontField());
         b = new JButton(localizationResources.getString("Select..."));
         b.setActionCommand("SelectTickLabelFont");
         b.addActionListener(this);
@@ -297,7 +287,7 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
      * @return The current label font.
      */
     public Font getLabelFont() {
-        return this.labelFont;
+        return this.defaultAxisEditorRefactoring1.getLabelFont();
     }
 
     /**
@@ -324,7 +314,7 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
      * @return The font used to draw the tick labels.
      */
     public Font getTickLabelFont() {
-        return this.tickLabelFont;
+        return this.defaultAxisEditorRefactoring2.getTickLabelFont();
     }
 
     /**
@@ -386,13 +376,13 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
         if (command.equals("SelectLabelFont")) {
-            attemptLabelFontSelection();
+            defaultAxisEditorRefactoring1.attemptLabelFontSelection(this);
         }
         else if (command.equals("SelectLabelPaint")) {
             attemptModifyLabelPaint();
         }
         else if (command.equals("SelectTickLabelFont")) {
-            attemptTickLabelFontSelection();
+            defaultAxisEditorRefactoring2.attemptTickLabelFontSelection(this);
         }
 //        else if (command.equals("LabelInsets")) {
 //            editLabelInsets();
@@ -400,25 +390,6 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
 //        else if (command.equals("TickLabelInsets")) {
 //            editTickLabelInsets();
 //        }
-    }
-
-    /**
-     * Presents a font selection dialog to the user.
-     */
-    private void attemptLabelFontSelection() {
-
-        FontChooserPanel panel = new FontChooserPanel(this.labelFont);
-        int result = JOptionPane.showConfirmDialog(this, panel,
-            localizationResources.getString("Font_Selection"),
-            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            this.labelFont = panel.getSelectedFont();
-            this.labelFontField.setText(
-                this.labelFont.getFontName() + " " + this.labelFont.getSize()
-            );
-        }
-
     }
 
     /**
@@ -439,18 +410,7 @@ class DefaultAxisEditor extends JPanel implements ActionListener {
      */
     public void attemptTickLabelFontSelection() {
 
-        FontChooserPanel panel = new FontChooserPanel(this.tickLabelFont);
-        int result = JOptionPane.showConfirmDialog(this, panel,
-            localizationResources.getString("Font_Selection"),
-            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            this.tickLabelFont = panel.getSelectedFont();
-            this.tickLabelFontField.setText(
-                this.tickLabelFont.getFontName() + " "
-                + this.tickLabelFont.getSize()
-            );
-        }
+        defaultAxisEditorRefactoring2.attemptTickLabelFontSelection(this);
 
     }
 

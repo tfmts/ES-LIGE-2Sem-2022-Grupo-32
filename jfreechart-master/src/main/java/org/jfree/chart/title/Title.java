@@ -69,7 +69,9 @@ import org.jfree.chart.internal.Args;
 public abstract class Title extends AbstractBlock
             implements ChartElement, Block, Cloneable, Serializable {
 
-    /** For serialization. */
+    private TitleRefactoring1 titleRefactoring1 = new TitleRefactoring1();
+
+	/** For serialization. */
     private static final long serialVersionUID = -6675162505277817221L;
 
     /** The default title position. */
@@ -101,11 +103,6 @@ public abstract class Title extends AbstractBlock
 
     /** Storage for registered change listeners. */
     private transient EventListenerList listenerList;
-
-    /**
-     * A flag that can be used to temporarily disable the listener mechanism.
-     */
-    private boolean notify;
 
     /**
      * Creates a new title, using default attributes where necessary.
@@ -160,7 +157,7 @@ public abstract class Title extends AbstractBlock
         this.verticalAlignment = verticalAlignment;
         setPadding(padding);
         this.listenerList = new EventListenerList();
-        this.notify = true;
+        titleRefactoring1.setNotify2(true);
     }
 
     /**
@@ -185,7 +182,7 @@ public abstract class Title extends AbstractBlock
      */
     public void setVisible(boolean visible) {
         this.visible = visible;
-        notifyListeners(new TitleChangeEvent(this));
+        titleRefactoring1.notifyListeners(new TitleChangeEvent(this), this.listenerList);
     }
 
     /**
@@ -207,7 +204,7 @@ public abstract class Title extends AbstractBlock
         Args.nullNotPermitted(position, "position");
         if (this.position != position) {
             this.position = position;
-            notifyListeners(new TitleChangeEvent(this));
+            titleRefactoring1.notifyListeners(new TitleChangeEvent(this), this.listenerList);
         }
     }
 
@@ -231,7 +228,7 @@ public abstract class Title extends AbstractBlock
         Args.nullNotPermitted(alignment, "alignment");
         if (this.horizontalAlignment != alignment) {
             this.horizontalAlignment = alignment;
-            notifyListeners(new TitleChangeEvent(this));
+            titleRefactoring1.notifyListeners(new TitleChangeEvent(this), this.listenerList);
         }
     }
 
@@ -255,7 +252,7 @@ public abstract class Title extends AbstractBlock
         Args.nullNotPermitted(alignment, "alignment");
         if (this.verticalAlignment != alignment) {
             this.verticalAlignment = alignment;
-            notifyListeners(new TitleChangeEvent(this));
+            titleRefactoring1.notifyListeners(new TitleChangeEvent(this), this.listenerList);
         }
     }
 
@@ -266,7 +263,7 @@ public abstract class Title extends AbstractBlock
      * @return The flag.
      */
     public boolean getNotify() {
-        return this.notify;
+        return this.titleRefactoring1.getNotify();
     }
 
     /**
@@ -277,10 +274,7 @@ public abstract class Title extends AbstractBlock
      * @param flag  the new value of the flag.
      */
     public void setNotify(boolean flag) {
-        this.notify = flag;
-        if (flag) {
-            notifyListeners(new TitleChangeEvent(this));
-        }
+        titleRefactoring1.setNotify(flag, this, this.listenerList);
     }
 
     /**
@@ -319,6 +313,7 @@ public abstract class Title extends AbstractBlock
     @Override
     public Object clone() throws CloneNotSupportedException {
         Title duplicate = (Title) super.clone();
+		duplicate.titleRefactoring1 = (TitleRefactoring1) this.titleRefactoring1.clone();
         duplicate.listenerList = new EventListenerList();
         // RectangleInsets is immutable => same reference in clone OK
         return duplicate;
@@ -350,15 +345,7 @@ public abstract class Title extends AbstractBlock
      *               the title.
      */
     protected void notifyListeners(TitleChangeEvent event) {
-        if (this.notify) {
-            Object[] listeners = this.listenerList.getListenerList();
-            for (int i = listeners.length - 2; i >= 0; i -= 2) {
-                if (listeners[i] == TitleChangeListener.class) {
-                    ((TitleChangeListener) listeners[i + 1]).titleChanged(
-                            event);
-                }
-            }
-        }
+        titleRefactoring1.notifyListeners(event, this.listenerList);
     }
 
     /**
@@ -389,7 +376,7 @@ public abstract class Title extends AbstractBlock
         if (this.verticalAlignment != that.verticalAlignment) {
             return false;
         }
-        if (this.notify != that.notify) {
+        if (this.titleRefactoring1.getNotify() != that.titleRefactoring1.getNotify()) {
             return false;
         }
         return super.equals(obj);

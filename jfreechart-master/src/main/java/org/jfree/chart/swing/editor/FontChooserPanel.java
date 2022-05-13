@@ -46,21 +46,14 @@ import javax.swing.ListModel;
  */
 public class FontChooserPanel extends JPanel {
 
-    /** The font sizes that can be selected. */
+    private FontChooserPanelRefactoring2 fontChooserPanelRefactoring2 = new FontChooserPanelRefactoring2();
+
+	/** The font sizes that can be selected. */
     public static final String[] SIZES = {"9", "10", "11", "12", "14", "16",
             "18", "20", "22", "24", "28", "36", "48", "72"};
 
-    /** The list of fonts. */
-    private JList fontlist;
-
     /** The list of sizes. */
     private JList sizelist;
-
-    /** The checkbox that indicates whether the font is bold. */
-    private JCheckBox bold;
-
-    /** The checkbox that indicates whether or not the font is italic. */
-    private JCheckBox italic;
 
     /** The resourceBundle for the localization. */
     protected static ResourceBundle localizationResources 
@@ -85,8 +78,8 @@ public class FontChooserPanel extends JPanel {
         fontPanel.setBorder(BorderFactory.createTitledBorder(
                             BorderFactory.createEtchedBorder(),
                             localizationResources.getString("Font")));
-        this.fontlist = new JList(fonts);
-        final JScrollPane fontpane = new JScrollPane(this.fontlist);
+        fontChooserPanelRefactoring2.setFontlist(new JList(fonts));
+        final JScrollPane fontpane = new JScrollPane(this.fontChooserPanelRefactoring2.getFontlist());
         fontpane.setBorder(BorderFactory.createEtchedBorder());
         fontPanel.add(fontpane);
         add(fontPanel);
@@ -101,10 +94,10 @@ public class FontChooserPanel extends JPanel {
         sizePanel.add(sizepane);
 
         final JPanel attributes = new JPanel(new GridLayout(1, 2));
-        this.bold = new JCheckBox(localizationResources.getString("Bold"));
-        this.italic = new JCheckBox(localizationResources.getString("Italic"));
-        attributes.add(this.bold);
-        attributes.add(this.italic);
+        fontChooserPanelRefactoring2.getFontChooserPanelRefactoring1().setBold(new JCheckBox(localizationResources.getString("Bold")));
+        fontChooserPanelRefactoring2.getFontChooserPanelRefactoring1().setItalic(new JCheckBox(localizationResources.getString("Italic")));
+        attributes.add(this.fontChooserPanelRefactoring2.getFontChooserPanelRefactoring1().getBold());
+        attributes.add(this.fontChooserPanelRefactoring2.getFontChooserPanelRefactoring1().getItalic());
         attributes.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(),
                 localizationResources.getString("Attributes")));
@@ -114,7 +107,7 @@ public class FontChooserPanel extends JPanel {
 
         add(right, BorderLayout.EAST);
 
-        setSelectedFont(font);
+        fontChooserPanelRefactoring2.setSelectedFont(font, this.sizelist);
     }
 
     /**
@@ -123,8 +116,7 @@ public class FontChooserPanel extends JPanel {
      * @return the font.
      */
     public Font getSelectedFont() {
-        return new Font(getSelectedName(), getSelectedStyle(),
-                getSelectedSize());
+        return fontChooserPanelRefactoring2.getSelectedFont(this);
     }
 
     /**
@@ -133,7 +125,7 @@ public class FontChooserPanel extends JPanel {
      * @return the name.
      */
     public String getSelectedName() {
-        return (String) this.fontlist.getSelectedValue();
+        return fontChooserPanelRefactoring2.getSelectedName();
     }
 
     /**
@@ -142,18 +134,7 @@ public class FontChooserPanel extends JPanel {
      * @return the style.
      */
     public int getSelectedStyle() {
-        if (this.bold.isSelected() && this.italic.isSelected()) {
-            return Font.BOLD + Font.ITALIC;
-        }
-        if (this.bold.isSelected()) {
-            return Font.BOLD;
-        }
-        if (this.italic.isSelected()) {
-            return Font.ITALIC;
-        }
-        else {
-            return Font.PLAIN;
-        }
+        return fontChooserPanelRefactoring2.getFontChooserPanelRefactoring1().getSelectedStyle();
     }
 
     /**
@@ -178,31 +159,7 @@ public class FontChooserPanel extends JPanel {
      * @param font the font from which to read the properties.
      */
     public void setSelectedFont (Font font) {
-        if (font == null) {
-            throw new NullPointerException();
-        }
-        this.bold.setSelected(font.isBold());
-        this.italic.setSelected(font.isItalic());
-
-        final String fontName = font.getName();
-        ListModel model = this.fontlist.getModel();
-        this.fontlist.clearSelection();
-        for (int i = 0; i < model.getSize(); i++) {
-            if (fontName.equals(model.getElementAt(i))) {
-                this.fontlist.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        final String fontSize = String.valueOf(font.getSize());
-        model = this.sizelist.getModel();
-        this.sizelist.clearSelection();
-        for (int i = 0; i < model.getSize(); i++) {
-            if (fontSize.equals(model.getElementAt(i))) {
-                this.sizelist.setSelectedIndex(i);
-                break;
-            }
-        }
+        fontChooserPanelRefactoring2.setSelectedFont(font, this.sizelist);
     }
 }
 

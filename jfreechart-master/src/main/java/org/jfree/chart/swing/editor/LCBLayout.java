@@ -194,32 +194,36 @@ public class LCBLayout implements LayoutManager, Serializable {
 
             // *** DO THE LAYOUT ***
             int x = insets.left;
-            for (int c = 0; c < COLUMNS; c++) {
-                int y = insets.top;
-                for (int r = 0; r < nrows; r++) {
-                    int i = r * COLUMNS + c;
-                    if (i < ncomponents) {
-                        Component component = parent.getComponent(i);
-                        Dimension d = component.getPreferredSize();
-                        int h = d.height;
-                        int adjust = (this.rowHeight[r] - h) / 2;
-                        parent.getComponent(i).setBounds(x, y + adjust, 
-                                this.colWidth[c], h);
-                    }
-                    y = y + this.rowHeight[r] + this.vGap;
-                }
-                x = x + this.colWidth[c];
-                if (c == 0) {
-                    x = x + this.labelGap;
-                }
-                if (c == 1) {
-                    x = x + this.buttonGap;
-                }
-            }
+            layoutContainerRefactoring1(parent, insets, ncomponents, nrows, x);
 
         }
 
     }
+
+	public void layoutContainerRefactoring1(Container parent, Insets insets, int ncomponents, int nrows, int x) {
+		for (int c = 0; c < COLUMNS; c++) {
+		    int y = insets.top;
+		    for (int r = 0; r < nrows; r++) {
+		        int i = r * COLUMNS + c;
+		        if (i < ncomponents) {
+		            Component component = parent.getComponent(i);
+		            Dimension d = component.getPreferredSize();
+		            int h = d.height;
+		            int adjust = (this.rowHeight[r] - h) / 2;
+		            parent.getComponent(i).setBounds(x, y + adjust, 
+		                    this.colWidth[c], h);
+		        }
+		        y = y + this.rowHeight[r] + this.vGap;
+		    }
+		    x = x + this.colWidth[c];
+		    if (c == 0) {
+		        x = x + this.labelGap;
+		    }
+		    if (c == 1) {
+		        x = x + this.buttonGap;
+		    }
+		}
+	}
 
     /**
      * Not used.
