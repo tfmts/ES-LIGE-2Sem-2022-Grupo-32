@@ -89,7 +89,9 @@ import org.jfree.data.xy.XYDataset;
 public class XYBarRenderer extends AbstractXYItemRenderer
         implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
 
-    /** For serialization. */
+    private XYBarRenderer_refactoring xYBarRenderer_refactoring = new XYBarRenderer_refactoring();
+
+	/** For serialization. */
     private static final long serialVersionUID = 770559577251370036L;
 
     /**
@@ -179,18 +181,6 @@ public class XYBarRenderer extends AbstractXYItemRenderer
         }
     }
 
-    /** The default base value for the bars. */
-    private double base;
-
-    /**
-     * A flag that controls whether the bars use the y-interval supplied by the
-     * dataset.
-     */
-    private boolean useYInterval;
-
-    /** Percentage margin (to reduce the width of bars). */
-    private double margin;
-
     /** A flag that controls whether or not bar outlines are drawn. */
     private boolean drawBarOutline;
 
@@ -219,16 +209,6 @@ public class XYBarRenderer extends AbstractXYItemRenderer
     private ItemLabelPosition negativeItemLabelPositionFallback;
 
     /**
-     * The bar painter (never {@code null}).
-     */
-    private XYBarPainter barPainter;
-
-    /**
-     * The flag that controls whether or not shadows are drawn for the bars.
-     */
-    private boolean shadowsVisible;
-
-    /**
      * The x-offset for the shadow effect.
      */
     private double shadowXOffset;
@@ -237,11 +217,6 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * The y-offset for the shadow effect.
      */
     private double shadowYOffset;
-
-    /**
-     * A factor used to align the bars about the x-value.
-     */
-    private double barAlignmentFactor;
 
     /**
      * The default constructor.
@@ -257,17 +232,17 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      */
     public XYBarRenderer(double margin) {
         super();
-        this.margin = margin;
-        this.base = 0.0;
-        this.useYInterval = false;
+        xYBarRenderer_refactoring.setMargin2(margin);
+        xYBarRenderer_refactoring.setBase2(0.0);
+        xYBarRenderer_refactoring.setUseYInterval2(false);
         this.gradientPaintTransformer = new StandardGradientPaintTransformer();
         this.drawBarOutline = false;
         this.legendBar = new Rectangle2D.Double(-3.0, -5.0, 6.0, 10.0);
-        this.barPainter = getDefaultBarPainter();
-        this.shadowsVisible = getDefaultShadowsVisible();
+        xYBarRenderer_refactoring.setBarPainter2(getDefaultBarPainter());
+        xYBarRenderer_refactoring.setShadowsVisible(getDefaultShadowsVisible());
         this.shadowXOffset = 4.0;
         this.shadowYOffset = 4.0;
-        this.barAlignmentFactor = -1.0;
+        xYBarRenderer_refactoring.setBarAlignmentFactor2(-1.0);
     }
 
     /**
@@ -278,7 +253,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #setBase(double)
      */
     public double getBase() {
-        return this.base;
+        return this.xYBarRenderer_refactoring.getBase();
     }
 
     /**
@@ -292,8 +267,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #getUseYInterval()
      */
     public void setBase(double base) {
-        this.base = base;
-        fireChangeEvent();
+        xYBarRenderer_refactoring.setBase(base, this);
     }
 
     /**
@@ -305,7 +279,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #setUseYInterval(boolean)
      */
     public boolean getUseYInterval() {
-        return this.useYInterval;
+        return this.xYBarRenderer_refactoring.getUseYInterval();
     }
 
     /**
@@ -318,10 +292,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #getUseYInterval()
      */
     public void setUseYInterval(boolean use) {
-        if (this.useYInterval != use) {
-            this.useYInterval = use;
-            fireChangeEvent();
-        }
+        xYBarRenderer_refactoring.setUseYInterval(use, this);
     }
 
     /**
@@ -333,7 +304,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #setMargin(double)
      */
     public double getMargin() {
-        return this.margin;
+        return this.xYBarRenderer_refactoring.getMargin();
     }
 
     /**
@@ -345,8 +316,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @see #getMargin()
      */
     public void setMargin(double margin) {
-        this.margin = margin;
-        fireChangeEvent();
+        xYBarRenderer_refactoring.setMargin(margin, this);
     }
 
     /**
@@ -485,7 +455,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @return The bar painter (never {@code null}).
      */
     public XYBarPainter getBarPainter() {
-        return this.barPainter;
+        return this.xYBarRenderer_refactoring.getBarPainter();
     }
 
     /**
@@ -495,9 +465,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @param painter  the painter ({@code null} not permitted).
      */
     public void setBarPainter(XYBarPainter painter) {
-        Args.nullNotPermitted(painter, "painter");
-        this.barPainter = painter;
-        fireChangeEvent();
+        xYBarRenderer_refactoring.setBarPainter(painter, this);
     }
 
     /**
@@ -507,7 +475,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @return A boolean.
      */
     public boolean getShadowsVisible() {
-        return this.shadowsVisible;
+        return this.xYBarRenderer_refactoring.getShadowsVisible();
     }
 
     /**
@@ -518,8 +486,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @param visible  the new flag value.
      */
     public void setShadowVisible(boolean visible) {
-        this.shadowsVisible = visible;
-        fireChangeEvent();
+        xYBarRenderer_refactoring.setShadowVisible(visible, this);
     }
 
     /**
@@ -568,7 +535,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @return The bar alignment factor.
      */
     public double getBarAlignmentFactor() {
-        return this.barAlignmentFactor;
+        return this.xYBarRenderer_refactoring.getBarAlignmentFactor();
     }
 
     /**
@@ -579,8 +546,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      * @param factor  the factor.
      */
     public void setBarAlignmentFactor(double factor) {
-        this.barAlignmentFactor = factor;
-        fireChangeEvent();
+        xYBarRenderer_refactoring.setBarAlignmentFactor(factor, this);
     }
 
     /**
@@ -605,7 +571,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
         XYBarRendererState state = new XYBarRendererState(info);
         ValueAxis rangeAxis = plot.getRangeAxisForDataset(plot.indexOf(
                 dataset));
-        state.setG2Base(rangeAxis.valueToJava2D(this.base, dataArea,
+        state.setG2Base(rangeAxis.valueToJava2D(this.xYBarRenderer_refactoring.getBase(), dataArea,
                 plot.getRangeAxisEdge()));
         return state;
 
@@ -702,11 +668,11 @@ public class XYBarRenderer extends AbstractXYItemRenderer
 
         double value0;
         double value1;
-        if (this.useYInterval) {
+        if (this.xYBarRenderer_refactoring.getUseYInterval()) {
             value0 = intervalDataset.getStartYValue(series, item);
             value1 = intervalDataset.getEndYValue(series, item);
         } else {
-            value0 = this.base;
+            value0 = this.xYBarRenderer_refactoring.getBase();
             value1 = intervalDataset.getYValue(series, item);
         }
         if (Double.isNaN(value0) || Double.isNaN(value1)) {
@@ -748,10 +714,10 @@ public class XYBarRenderer extends AbstractXYItemRenderer
         }
 
         // is there an alignment adjustment to be made?
-        if (this.barAlignmentFactor >= 0.0 && this.barAlignmentFactor <= 1.0) {
+        if (this.xYBarRenderer_refactoring.getBarAlignmentFactor() >= 0.0 && this.xYBarRenderer_refactoring.getBarAlignmentFactor() <= 1.0) {
             double x = intervalDataset.getXValue(series, item);
             double interval = endX - startX;
-            startX = x - interval * this.barAlignmentFactor;
+            startX = x - interval * this.xYBarRenderer_refactoring.getBarAlignmentFactor();
             endX = startX + interval;
         }
 
@@ -808,10 +774,10 @@ public class XYBarRenderer extends AbstractXYItemRenderer
             beginElementGroup(g2, dataset.getSeriesKey(series), item);
         }
         if (getShadowsVisible()) {
-            this.barPainter.paintBarShadow(g2, this, series, item, bar, barBase,
-                !this.useYInterval);
+            this.xYBarRenderer_refactoring.getBarPainter().paintBarShadow(g2, this, series, item, bar, barBase,
+                !this.xYBarRenderer_refactoring.getUseYInterval());
         }
-        this.barPainter.paintBar(g2, this, series, item, bar, barBase);
+        this.xYBarRenderer_refactoring.getBarPainter().paintBar(g2, this, series, item, bar, barBase);
         if (state.getElementHinting()) {
             endElementGroup(g2);
         }
@@ -1077,7 +1043,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
      */
     @Override
     public Range findRangeBounds(XYDataset dataset) {
-        return findRangeBounds(dataset, this.useYInterval);
+        return findRangeBounds(dataset, this.xYBarRenderer_refactoring.getUseYInterval());
     }
 
     /**
@@ -1090,6 +1056,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
     @Override
     public Object clone() throws CloneNotSupportedException {
         XYBarRenderer result = (XYBarRenderer) super.clone();
+		result.xYBarRenderer_refactoring = (XYBarRenderer_refactoring) this.xYBarRenderer_refactoring.clone();
         if (this.gradientPaintTransformer != null) {
             result.gradientPaintTransformer = CloneUtils.clone(this.gradientPaintTransformer);
         }
@@ -1113,16 +1080,16 @@ public class XYBarRenderer extends AbstractXYItemRenderer
             return false;
         }
         XYBarRenderer that = (XYBarRenderer) obj;
-        if (this.base != that.base) {
+        if (this.xYBarRenderer_refactoring.getBase() != that.xYBarRenderer_refactoring.getBase()) {
             return false;
         }
         if (this.drawBarOutline != that.drawBarOutline) {
             return false;
         }
-        if (this.margin != that.margin) {
+        if (this.xYBarRenderer_refactoring.getMargin() != that.xYBarRenderer_refactoring.getMargin()) {
             return false;
         }
-        if (this.useYInterval != that.useYInterval) {
+        if (this.xYBarRenderer_refactoring.getUseYInterval() != that.xYBarRenderer_refactoring.getUseYInterval()) {
             return false;
         }
         if (!Objects.equals(this.gradientPaintTransformer, that.gradientPaintTransformer)) {
@@ -1137,10 +1104,10 @@ public class XYBarRenderer extends AbstractXYItemRenderer
         if (!Objects.equals(this.negativeItemLabelPositionFallback, that.negativeItemLabelPositionFallback)) {
             return false;
         }
-        if (!this.barPainter.equals(that.barPainter)) {
+        if (!this.xYBarRenderer_refactoring.getBarPainter().equals(that.xYBarRenderer_refactoring.getBarPainter())) {
             return false;
         }
-        if (this.shadowsVisible != that.shadowsVisible) {
+        if (this.xYBarRenderer_refactoring.getShadowsVisible() != that.xYBarRenderer_refactoring.getShadowsVisible()) {
             return false;
         }
         if (this.shadowXOffset != that.shadowXOffset) {
@@ -1149,7 +1116,7 @@ public class XYBarRenderer extends AbstractXYItemRenderer
         if (this.shadowYOffset != that.shadowYOffset) {
             return false;
         }
-        if (this.barAlignmentFactor != that.barAlignmentFactor) {
+        if (this.xYBarRenderer_refactoring.getBarAlignmentFactor() != that.xYBarRenderer_refactoring.getBarAlignmentFactor()) {
             return false;
         }
         return super.equals(obj);

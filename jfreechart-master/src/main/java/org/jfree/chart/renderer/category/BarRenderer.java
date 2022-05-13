@@ -86,7 +86,11 @@ import org.jfree.data.category.CategoryDataset;
 public class BarRenderer extends AbstractCategoryItemRenderer
         implements Cloneable, PublicCloneable, Serializable {
 
-    /** For serialization. */
+    private BarRenderer_refactoring2 barRenderer_refactoring2 = new BarRenderer_refactoring2();
+
+	private BarRenderer_refactoring barRenderer_refactoring = new BarRenderer_refactoring();
+
+	/** For serialization. */
     private static final long serialVersionUID = 6000649414965887481L;
 
     /** The default item margin percentage. */
@@ -167,26 +171,6 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     private GradientPaintTransformer gradientPaintTransformer;
 
-    /**
-     * The fallback position if a positive item label doesn't fit inside the
-     * bar.
-     */
-    private ItemLabelPosition positiveItemLabelPositionFallback;
-
-    /**
-     * The fallback position if a negative item label doesn't fit inside the
-     * bar.
-     */
-    private ItemLabelPosition negativeItemLabelPositionFallback;
-
-    /** The upper clip (axis) value for the axis. */
-    private double upperClip;
-    // TODO:  this needs to move into the renderer state
-
-    /** The lower clip (axis) value for the axis. */
-    private double lowerClip;
-    // TODO:  this needs to move into the renderer state
-
     /** The base value for the bars (defaults to 0.0). */
     private double base;
 
@@ -232,8 +216,8 @@ public class BarRenderer extends AbstractCategoryItemRenderer
         this.drawBarOutline = false;
         this.maximumBarWidth = 1.0;
             // 100 percent, so it will not apply unless changed
-        this.positiveItemLabelPositionFallback = null;
-        this.negativeItemLabelPositionFallback = null;
+        barRenderer_refactoring.setPositiveItemLabelPositionFallback2(null);
+        barRenderer_refactoring.setNegativeItemLabelPositionFallback2(null);
         this.gradientPaintTransformer = new StandardGradientPaintTransformer();
         this.minimumBarLength = 0.0;
         setDefaultLegendShape(new Rectangle2D.Double(-4.0, -4.0, 8.0, 8.0));
@@ -415,7 +399,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      * @see #setPositiveItemLabelPositionFallback(ItemLabelPosition)
      */
     public ItemLabelPosition getPositiveItemLabelPositionFallback() {
-        return this.positiveItemLabelPositionFallback;
+        return this.barRenderer_refactoring.getPositiveItemLabelPositionFallback();
     }
 
     /**
@@ -429,8 +413,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     public void setPositiveItemLabelPositionFallback(
             ItemLabelPosition position) {
-        this.positiveItemLabelPositionFallback = position;
-        fireChangeEvent();
+        barRenderer_refactoring.setPositiveItemLabelPositionFallback(position, this);
     }
 
     /**
@@ -442,7 +425,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      * @see #setPositiveItemLabelPositionFallback(ItemLabelPosition)
      */
     public ItemLabelPosition getNegativeItemLabelPositionFallback() {
-        return this.negativeItemLabelPositionFallback;
+        return this.barRenderer_refactoring.getNegativeItemLabelPositionFallback();
     }
 
     /**
@@ -456,8 +439,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     public void setNegativeItemLabelPositionFallback(
             ItemLabelPosition position) {
-        this.negativeItemLabelPositionFallback = position;
-        fireChangeEvent();
+        barRenderer_refactoring.setNegativeItemLabelPositionFallback(position, this);
     }
 
     /**
@@ -610,7 +592,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     public double getLowerClip() {
         // TODO:  this attribute should be transferred to the renderer state.
-        return this.lowerClip;
+        return this.barRenderer_refactoring2.getLowerClip();
     }
 
     /**
@@ -621,7 +603,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      */
     public double getUpperClip() {
         // TODO:  this attribute should be transferred to the renderer state.
-        return this.upperClip;
+        return this.barRenderer_refactoring2.getUpperClip();
     }
 
     /**
@@ -647,8 +629,8 @@ public class BarRenderer extends AbstractCategoryItemRenderer
 
         // get the clipping values...
         ValueAxis rangeAxis = plot.getRangeAxisForDataset(rendererIndex);
-        this.lowerClip = rangeAxis.getRange().getLowerBound();
-        this.upperClip = rangeAxis.getRange().getUpperBound();
+        barRenderer_refactoring2.setLowerClip(rangeAxis.getRange().getLowerBound());
+        barRenderer_refactoring2.setUpperClip(rangeAxis.getRange().getUpperBound());
 
         // calculate the bar width
         calculateBarWidth(plot, dataArea, rendererIndex, state);
@@ -762,19 +744,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
      *         the bar is not visible for the current axis range).
      */
     protected double[] calculateBarL0L1(double value) {
-        double lclip = getLowerClip();
-        double uclip = getUpperClip();
-        double barLow = Math.min(this.base, value);
-        double barHigh = Math.max(this.base, value);
-        if (barHigh < lclip) {  // bar is not visible
-            return null;
-        }
-        if (barLow > uclip) {   // bar is not visible
-            return null;
-        }
-        barLow = Math.max(barLow, lclip);
-        barHigh = Math.min(barHigh, uclip);
-        return new double[] {barLow, barHigh};
+        return barRenderer_refactoring2.calculateBarL0L1(value, this.base);
     }
 
     /**
@@ -899,7 +869,7 @@ public class BarRenderer extends AbstractCategoryItemRenderer
         PlotOrientation orientation = plot.getOrientation();
         double barW0 = calculateBarW0(plot, orientation, dataArea, domainAxis,
                 state, visibleRow, column);
-        double[] barL0L1 = calculateBarL0L1(value);
+        double[] barL0L1 = barRenderer_refactoring2.calculateBarL0L1(value, this.base);
         if (barL0L1 == null) {
             return;  // the bar is not visible
         }
@@ -1254,10 +1224,10 @@ public class BarRenderer extends AbstractCategoryItemRenderer
         if (!Objects.equals(this.gradientPaintTransformer, that.gradientPaintTransformer)) {
             return false;
         }
-        if (!Objects.equals(this.positiveItemLabelPositionFallback, that.positiveItemLabelPositionFallback)) {
+        if (!Objects.equals(this.barRenderer_refactoring.getPositiveItemLabelPositionFallback(), that.barRenderer_refactoring.getPositiveItemLabelPositionFallback())) {
             return false;
         }
-        if (!Objects.equals(this.negativeItemLabelPositionFallback, that.negativeItemLabelPositionFallback)) {
+        if (!Objects.equals(this.barRenderer_refactoring.getNegativeItemLabelPositionFallback(), that.barRenderer_refactoring.getNegativeItemLabelPositionFallback())) {
             return false;
         }
         if (!this.barPainter.equals(that.barPainter)) {
@@ -1303,5 +1273,12 @@ public class BarRenderer extends AbstractCategoryItemRenderer
         stream.defaultReadObject();
         this.shadowPaint = SerialUtils.readPaint(stream);
     }
+
+	public Object clone() throws java.lang.CloneNotSupportedException {
+		BarRenderer clone = (BarRenderer) super.clone();
+		clone.barRenderer_refactoring2 = (BarRenderer_refactoring2) this.barRenderer_refactoring2.clone();
+		clone.barRenderer_refactoring = (BarRenderer_refactoring) this.barRenderer_refactoring.clone();
+		return clone;
+	}
 
 }

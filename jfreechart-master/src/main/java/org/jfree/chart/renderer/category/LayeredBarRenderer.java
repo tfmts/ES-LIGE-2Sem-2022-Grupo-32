@@ -243,51 +243,32 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
             }
         }
 
-        RectangleEdge edge = plot.getRangeAxisEdge();
-        double transX1 = rangeAxis.valueToJava2D(base, dataArea, edge);
-        double transX2 = rangeAxis.valueToJava2D(value, dataArea, edge);
-        double rectX = Math.min(transX1, transX2);
-        double rectWidth = Math.abs(transX2 - transX1);
+        Rectangle2D bar = drawHorizontalItem_refactoring(state, dataArea, plot, domainAxis, rangeAxis, row, column,
+				value, base);
+		Paint itemPaint = drawHorizontalItem_refactoring3(g2, state, dataset, row, column, bar);
+        g2.setPaint(itemPaint);
+        g2.fill(bar);
 
-        // Y
-        double rectY = domainAxis.getCategoryMiddle(column, getColumnCount(),
-                dataArea, plot.getDomainAxisEdge()) - state.getBarWidth() / 2.0;
+        // draw the outline...
+        drawHorizontalItem_refactoring2(g2, state, plot, dataset, row, column, value, base, bar);
+    }
 
-        int seriesCount = getRowCount();
-
-        // draw the bar...
-        double shift = 0.0;
-        double rectHeight;
-        double widthFactor = 1.0;
-        double seriesBarWidth = getSeriesBarWidth(row);
-        if (!Double.isNaN(seriesBarWidth)) {
-            widthFactor = seriesBarWidth;
-        }
-        rectHeight = widthFactor * state.getBarWidth();
-        rectY = rectY + (1 - widthFactor) * state.getBarWidth() / 2.0;
-        if (seriesCount > 1) {
-            shift = rectHeight * 0.20 / (seriesCount - 1);
-        }
-
-        Rectangle2D bar = new Rectangle2D.Double(rectX,
-                (rectY + ((seriesCount - 1 - row) * shift)), rectWidth,
-                (rectHeight - (seriesCount - 1 - row) * shift * 2));
-
-        if (state.getElementHinting()) {
+	protected Paint drawHorizontalItem_refactoring3(Graphics2D g2, CategoryItemRendererState state,
+			CategoryDataset dataset, int row, int column, Rectangle2D bar) {
+		if (state.getElementHinting()) {
             beginElementGroup(g2, dataset.getRowKey(row), 
                     dataset.getColumnKey(column));
         }
         
         Paint itemPaint = getItemPaint(row, column);
         GradientPaintTransformer t = getGradientPaintTransformer();
-        if (t != null && itemPaint instanceof GradientPaint) {
-            itemPaint = t.transform((GradientPaint) itemPaint, bar);
-        }
-        g2.setPaint(itemPaint);
-        g2.fill(bar);
+        itemPaint = drawHorizontalItem_refactoring2(bar, itemPaint, t);
+		return itemPaint;
+	}
 
-        // draw the outline...
-        if (isDrawBarOutline()
+	protected void drawHorizontalItem_refactoring2(Graphics2D g2, CategoryItemRendererState state, CategoryPlot plot,
+			CategoryDataset dataset, int row, int column, double value, double base, Rectangle2D bar) {
+		if (isDrawBarOutline()
                 && state.getBarWidth() > BAR_OUTLINE_WIDTH_THRESHOLD) {
             Stroke stroke = getItemOutlineStroke(row, column);
             Paint paint = getItemOutlinePaint(row, column);
@@ -310,7 +291,35 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
         if (entities != null) {
             addItemEntity(entities, dataset, row, column, bar);
         }
-    }
+	}
+
+	private Rectangle2D drawHorizontalItem_refactoring(CategoryItemRendererState state, Rectangle2D dataArea,
+			CategoryPlot plot, CategoryAxis domainAxis, ValueAxis rangeAxis, int row, int column, double value,
+			double base) {
+		RectangleEdge edge = plot.getRangeAxisEdge();
+		double transX1 = rangeAxis.valueToJava2D(base, dataArea, edge);
+		double transX2 = rangeAxis.valueToJava2D(value, dataArea, edge);
+		double rectX = Math.min(transX1, transX2);
+		double rectWidth = Math.abs(transX2 - transX1);
+		double rectY = domainAxis.getCategoryMiddle(column, getColumnCount(), dataArea, plot.getDomainAxisEdge())
+				- state.getBarWidth() / 2.0;
+		int seriesCount = getRowCount();
+		double shift = 0.0;
+		double rectHeight;
+		double widthFactor = 1.0;
+		double seriesBarWidth = getSeriesBarWidth(row);
+		if (!Double.isNaN(seriesBarWidth)) {
+			widthFactor = seriesBarWidth;
+		}
+		rectHeight = widthFactor * state.getBarWidth();
+		rectY = rectY + (1 - widthFactor) * state.getBarWidth() / 2.0;
+		if (seriesCount > 1) {
+			shift = rectHeight * 0.20 / (seriesCount - 1);
+		}
+		Rectangle2D bar = new Rectangle2D.Double(rectX, (rectY + ((seriesCount - 1 - row) * shift)), rectWidth,
+				(rectHeight - (seriesCount - 1 - row) * shift * 2));
+		return bar;
+	}
 
     /**
      * Draws the bar for a single (series, category) data item.
@@ -386,34 +395,21 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
         double shift = 0.0;
         double widthFactor = 1.0;
         double seriesBarWidth = getSeriesBarWidth(row);
-        if (!Double.isNaN(seriesBarWidth)) {
-            widthFactor = seriesBarWidth;
-        }
-        rectWidth = widthFactor * state.getBarWidth();
-        rectX = rectX + (1 - widthFactor) * state.getBarWidth() / 2.0;
-        if (seriesCount > 1) {
-            // needs to be improved !!!
-            shift = rectWidth * 0.20 / (seriesCount - 1);
-        }
-
-        Rectangle2D bar = new Rectangle2D.Double(
-            (rectX + ((seriesCount - 1 - row) * shift)), rectY,
-            (rectWidth - (seriesCount - 1 - row) * shift * 2), rectHeight);
-
-        if (state.getElementHinting()) {
-            beginElementGroup(g2, dataset.getRowKey(row), 
-                    dataset.getColumnKey(column));
-        }
+        Rectangle2D bar = drawVerticalItem_refactoring(g2, state, dataset, row, column, rectX, seriesCount, rectY,
+				rectHeight, shift, widthFactor, seriesBarWidth);
 
         Paint itemPaint = getItemPaint(row, column);
         GradientPaintTransformer t = getGradientPaintTransformer();
-        if (t != null && itemPaint instanceof GradientPaint) {
-            itemPaint = t.transform((GradientPaint) itemPaint, bar);
-        }
+        itemPaint = drawHorizontalItem_refactoring2(bar, itemPaint, t);
         g2.setPaint(itemPaint);
         g2.fill(bar);
 
-        if (isDrawBarOutline() && state.getBarWidth() 
+        drawHorizontalItem_refactoring3(g2, state, plot, dataset, row, column, value, base, bar);
+    }
+
+	protected void drawHorizontalItem_refactoring3(Graphics2D g2, CategoryItemRendererState state, CategoryPlot plot,
+			CategoryDataset dataset, int row, int column, double value, double base, Rectangle2D bar) {
+		if (isDrawBarOutline() && state.getBarWidth() 
                 > BAR_OUTLINE_WIDTH_THRESHOLD) {
             g2.setStroke(getItemOutlineStroke(row, column));
             g2.setPaint(getItemOutlinePaint(row, column));
@@ -437,7 +433,39 @@ public class LayeredBarRenderer extends BarRenderer implements Serializable {
         if (entities != null) {
             addItemEntity(entities, dataset, row, column, bar);
         }
-    }
+	}
+
+	protected Paint drawHorizontalItem_refactoring2(Rectangle2D bar, Paint itemPaint, GradientPaintTransformer t) {
+		if (t != null && itemPaint instanceof GradientPaint) {
+            itemPaint = t.transform((GradientPaint) itemPaint, bar);
+        }
+		return itemPaint;
+	}
+
+	protected Rectangle2D drawVerticalItem_refactoring(Graphics2D g2, CategoryItemRendererState state,
+			CategoryDataset dataset, int row, int column, double rectX, int seriesCount, double rectY,
+			double rectHeight, double shift, double widthFactor, double seriesBarWidth) {
+		double rectWidth;
+		if (!Double.isNaN(seriesBarWidth)) {
+            widthFactor = seriesBarWidth;
+        }
+        rectWidth = widthFactor * state.getBarWidth();
+        rectX = rectX + (1 - widthFactor) * state.getBarWidth() / 2.0;
+        if (seriesCount > 1) {
+            // needs to be improved !!!
+            shift = rectWidth * 0.20 / (seriesCount - 1);
+        }
+
+        Rectangle2D bar = new Rectangle2D.Double(
+            (rectX + ((seriesCount - 1 - row) * shift)), rectY,
+            (rectWidth - (seriesCount - 1 - row) * shift * 2), rectHeight);
+
+        if (state.getElementHinting()) {
+            beginElementGroup(g2, dataset.getRowKey(row), 
+                    dataset.getColumnKey(column));
+        }
+		return bar;
+	}
 
     @Override
     public int hashCode() {

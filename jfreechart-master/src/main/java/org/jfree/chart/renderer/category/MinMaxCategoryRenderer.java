@@ -361,30 +361,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
             }
 
             // connect to the previous point
-            if (this.plotLines) {
-                if (column != 0) {
-                    Number previousValue = dataset.getValue(row, column - 1);
-                    if (previousValue != null) {
-                        // previous data point...
-                        double previous = previousValue.doubleValue();
-                        double x0 = domainAxis.getCategoryMiddle(column - 1,
-                                getColumnCount(), dataArea,
-                                plot.getDomainAxisEdge());
-                        double y0 = rangeAxis.valueToJava2D(previous, dataArea,
-                                plot.getRangeAxisEdge());
-                        g2.setPaint(getItemPaint(row, column));
-                        g2.setStroke(getItemStroke(row, column));
-                        Line2D line;
-                        if (orient == PlotOrientation.VERTICAL) {
-                            line = new Line2D.Double(x0, y0, x1, y1);
-                        }
-                        else {
-                            line = new Line2D.Double(y0, x0, y1, x1);
-                        }
-                        g2.draw(line);
-                    }
-                }
-            }
+            drawItem_refactoring(g2, dataArea, plot, domainAxis, rangeAxis, dataset, row, column, x1, y1, orient);
 
             // add an item entity, if this information is being collected
             EntityCollection entities = state.getEntityCollection();
@@ -393,6 +370,35 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
             }
         }
     }
+
+	protected void drawItem_refactoring(Graphics2D g2, Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,
+			ValueAxis rangeAxis, CategoryDataset dataset, int row, int column, double x1, double y1,
+			PlotOrientation orient) {
+		if (this.plotLines) {
+		    if (column != 0) {
+		        Number previousValue = dataset.getValue(row, column - 1);
+		        if (previousValue != null) {
+		            // previous data point...
+		            double previous = previousValue.doubleValue();
+		            double x0 = domainAxis.getCategoryMiddle(column - 1,
+		                    getColumnCount(), dataArea,
+		                    plot.getDomainAxisEdge());
+		            double y0 = rangeAxis.valueToJava2D(previous, dataArea,
+		                    plot.getRangeAxisEdge());
+		            g2.setPaint(getItemPaint(row, column));
+		            g2.setStroke(getItemStroke(row, column));
+		            Line2D line;
+		            if (orient == PlotOrientation.VERTICAL) {
+		                line = new Line2D.Double(x0, y0, x1, y1);
+		            }
+		            else {
+		                line = new Line2D.Double(y0, x0, y1, x1);
+		            }
+		            g2.draw(line);
+		        }
+		    }
+		}
+	}
 
     /**
      * Tests this instance for equality with an arbitrary object.  The icon

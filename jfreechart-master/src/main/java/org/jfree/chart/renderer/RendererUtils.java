@@ -61,9 +61,7 @@ public class RendererUtils {
     public static int findLiveItemsLowerBound(XYDataset dataset, int series,
             double xLow, double xHigh) {
         Args.nullNotPermitted(dataset, "dataset");
-        if (xLow >= xHigh) {
-            throw new IllegalArgumentException("Requires xLow < xHigh.");
-        }
+        findLiveItemsLowerBound_refactoring3(xLow, xHigh);
         int itemCount = dataset.getItemCount(series);
         if (itemCount <= 1) {
             return 0;
@@ -96,29 +94,7 @@ public class RendererUtils {
             return high;
         }
         else if (dataset.getDomainOrder() == DomainOrder.DESCENDING) {
-            // when the x-values are sorted in descending order, the lower
-            // bound is found by calculating relative to the xHigh value
-            int low = 0;
-            int high = itemCount - 1;
-            double lowValue = dataset.getXValue(series, low);
-            if (lowValue <= xHigh) {
-                return low;
-            }
-            double highValue = dataset.getXValue(series, high);
-            if (highValue > xHigh) {
-                return high;
-            }
-            while (high - low > 1) {
-                int mid = (low + high) / 2;
-                double midV = dataset.getXValue(series, mid);
-                if (midV > xHigh) {
-                    low = mid;
-                }
-                else {
-                    high = mid;
-                }
-            }
-            return high;
+            return findLiveItemsLowerBound_refactoring(dataset, series, xHigh, itemCount);
         }
         else {
             // we don't know anything about the ordering of the x-values,
@@ -129,13 +105,51 @@ public class RendererUtils {
             double x = dataset.getXValue(series, index);
             while (index < itemCount && x < xLow) {
                 index++;
-                if (index < itemCount) {
-                    x = dataset.getXValue(series, index);
-                }
+                x = findLiveItemsLowerBound_refactoring2(dataset, series, itemCount, index, x);
             }
             return Math.min(Math.max(0, index), itemCount - 1);
         }
     }
+
+	public static void findLiveItemsLowerBound_refactoring3(double xLow, double xHigh) {
+		if (xLow >= xHigh) {
+            throw new IllegalArgumentException("Requires xLow < xHigh.");
+        }
+	}
+
+	public static double findLiveItemsLowerBound_refactoring2(XYDataset dataset, int series, int itemCount, int index,
+			double x) {
+		if (index < itemCount) {
+		    x = dataset.getXValue(series, index);
+		}
+		return x;
+	}
+
+	public static int findLiveItemsLowerBound_refactoring(XYDataset dataset, int series, double xHigh, int itemCount) {
+		// when the x-values are sorted in descending order, the lower
+		// bound is found by calculating relative to the xHigh value
+		int low = 0;
+		int high = itemCount - 1;
+		double lowValue = dataset.getXValue(series, low);
+		if (lowValue <= xHigh) {
+		    return low;
+		}
+		double highValue = dataset.getXValue(series, high);
+		if (highValue > xHigh) {
+		    return high;
+		}
+		while (high - low > 1) {
+		    int mid = (low + high) / 2;
+		    double midV = dataset.getXValue(series, mid);
+		    if (midV > xHigh) {
+		        low = mid;
+		    }
+		    else {
+		        high = mid;
+		    }
+		}
+		return high;
+	}
 
     /**
      * Finds the upper index of the range of live items in the specified data
@@ -153,9 +167,7 @@ public class RendererUtils {
     public static int findLiveItemsUpperBound(XYDataset dataset, int series,
             double xLow, double xHigh) {
         Args.nullNotPermitted(dataset, "dataset");
-        if (xLow >= xHigh) {
-            throw new IllegalArgumentException("Requires xLow < xHigh.");
-        }
+        findLiveItemsLowerBound_refactoring3(xLow, xHigh);
         int itemCount = dataset.getItemCount(series);
         if (itemCount <= 1) {
             return 0;
@@ -172,16 +184,7 @@ public class RendererUtils {
                 return high;
             }
             int mid = (low + high) / 2;
-            while (high - low > 1) {
-                double midV = dataset.getXValue(series, mid);
-                if (midV <= xHigh) {
-                    low = mid;
-                }
-                else {
-                    high = mid;
-                }
-                mid = (low + high) / 2;
-            }
+            mid = findLiveItemsUpperBound_refactoring(dataset, series, xHigh, low, high, mid);
             return mid;
         }
         else if (dataset.getDomainOrder() == DomainOrder.DESCENDING) {
@@ -198,16 +201,7 @@ public class RendererUtils {
             if (highValue >= xLow) {
                 return high;
             }
-            while (high - low > 1) {
-                double midV = dataset.getXValue(series, mid);
-                if (midV >= xLow) {
-                    low = mid;
-                }
-                else {
-                    high = mid;
-                }
-                mid = (low + high) / 2;
-            }
+            mid = findLiveItemsUpperBound_refactoring3(dataset, series, xLow, low, high, mid);
             return mid;
         }
         else {
@@ -219,13 +213,48 @@ public class RendererUtils {
             double x = dataset.getXValue(series, index);
             while (index >= 0 && x > xHigh) {
                 index--;
-                if (index >= 0) {
-                    x = dataset.getXValue(series, index);
-                }
+                x = findLiveItemsUpperBound_refactoring2(dataset, series, index, x);
             }
             return Math.max(index, 0);
         }
     }
+
+	public static int findLiveItemsUpperBound_refactoring3(XYDataset dataset, int series, double xLow, int low,
+			int high, int mid) {
+		while (high - low > 1) {
+		    double midV = dataset.getXValue(series, mid);
+		    if (midV >= xLow) {
+		        low = mid;
+		    }
+		    else {
+		        high = mid;
+		    }
+		    mid = (low + high) / 2;
+		}
+		return mid;
+	}
+
+	public static double findLiveItemsUpperBound_refactoring2(XYDataset dataset, int series, int index, double x) {
+		if (index >= 0) {
+		    x = dataset.getXValue(series, index);
+		}
+		return x;
+	}
+
+	public static int findLiveItemsUpperBound_refactoring(XYDataset dataset, int series, double xHigh, int low,
+			int high, int mid) {
+		while (high - low > 1) {
+		    double midV = dataset.getXValue(series, mid);
+		    if (midV <= xHigh) {
+		        low = mid;
+		    }
+		    else {
+		        high = mid;
+		    }
+		    mid = (low + high) / 2;
+		}
+		return mid;
+	}
 
     /**
      * Finds a range of item indices that is guaranteed to contain all the

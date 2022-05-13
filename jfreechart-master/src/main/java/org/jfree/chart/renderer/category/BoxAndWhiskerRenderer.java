@@ -94,7 +94,9 @@ import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         implements Cloneable, PublicCloneable, Serializable {
 
-    /** For serialization. */
+    private BoxAndWhiskerRenderer_refactoring boxAndWhiskerRenderer_refactoring = new BoxAndWhiskerRenderer_refactoring();
+
+	/** For serialization. */
     private static final long serialVersionUID = 632027470694481177L;
 
     /** The color used to paint the median line and average marker. */
@@ -123,16 +125,6 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
     private boolean meanVisible;
 
     /**
-     * A flag that controls whether or not the maxOutlier is visible.
-     */
-    private boolean maxOutlierVisible;
-
-    /**
-     * A flag that controls whether or not the minOutlier is visible.
-     */
-    private boolean minOutlierVisible;
-
-    /**
      * A flag that, if {@code true}, causes the whiskers to be drawn
      * using the outline paint for the series.  The default value is
      * {@code false} and in that case the regular series paint is used.
@@ -154,8 +146,8 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         this.maximumBarWidth = 1.0;
         this.medianVisible = true;
         this.meanVisible = true;
-        this.minOutlierVisible = true;
-        this.maxOutlierVisible = true;
+        boxAndWhiskerRenderer_refactoring.setMinOutlierVisible2(true);
+        boxAndWhiskerRenderer_refactoring.setMaxOutlierVisible2(true);
         this.useOutlinePaintForWhiskers = false;
         this.whiskerWidth = 1.0;
         setDefaultLegendShape(new Rectangle2D.Double(-4.0, -4.0, 8.0, 8.0));
@@ -332,7 +324,7 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
      * @since 1.5.2
      */
     public boolean isMinOutlierVisible() {
-        return this.minOutlierVisible;
+        return this.boxAndWhiskerRenderer_refactoring.getMinOutlierVisible();
     }
 
     /**
@@ -347,11 +339,7 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
      * @since 1.5.2
      */
     public void setMinOutlierVisible(boolean visible) {
-        if (this.minOutlierVisible == visible) {
-            return;
-        }
-        this.minOutlierVisible = visible;
-        fireChangeEvent();
+        boxAndWhiskerRenderer_refactoring.setMinOutlierVisible(visible, this);
     }
 
     /**
@@ -365,7 +353,7 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
      * @since 1.5.2
      */
     public boolean isMaxOutlierVisible() {
-        return this.maxOutlierVisible;
+        return this.boxAndWhiskerRenderer_refactoring.getMaxOutlierVisible();
     }
 
     /**
@@ -380,11 +368,7 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
      * @since 1.5.2
      */
     public void setMaxOutlierVisible(boolean visible) {
-        if (this.maxOutlierVisible == visible) {
-            return;
-        }
-        this.maxOutlierVisible = visible;
-        fireChangeEvent();
+        boxAndWhiskerRenderer_refactoring.setMaxOutlierVisible(visible, this);
     }
 
     /**
@@ -715,26 +699,18 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         // draw mean - SPECIAL AIMS REQUIREMENT...
         g2.setPaint(this.artifactPaint);
         double aRadius;                 // average radius
-        if (this.meanVisible) {
-            Number xMean = bawDataset.getMeanValue(row, column);
-            if (xMean != null) {
-                double xxMean = rangeAxis.valueToJava2D(xMean.doubleValue(),
-                        dataArea, location);
-                aRadius = state.getBarWidth() / 4;
-                // here we check that the average marker will in fact be
-                // visible before drawing it...
-                if ((xxMean > (dataArea.getMinX() - aRadius))
-                        && (xxMean < (dataArea.getMaxX() + aRadius))) {
-                    Ellipse2D.Double avgEllipse = new Ellipse2D.Double(xxMean
-                            - aRadius, yy + aRadius, aRadius * 2, aRadius * 2);
-                    g2.fill(avgEllipse);
-                    g2.draw(avgEllipse);
-                }
-            }
-        }
+        drawHorizontalItem_refactoring(g2, state, dataArea, rangeAxis, row, column, bawDataset, yy, location);
 
         // draw median...
-        if (this.medianVisible) {
+        drawHorizontalItem_refactoring2(g2, state, dataArea, rangeAxis, dataset, row, column, bawDataset, yy, location,
+				box);
+
+    }
+
+	protected void drawHorizontalItem_refactoring2(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea,
+			ValueAxis rangeAxis, CategoryDataset dataset, int row, int column, BoxAndWhiskerCategoryDataset bawDataset,
+			double yy, RectangleEdge location, Shape box) {
+		if (this.medianVisible) {
             Number xMedian = bawDataset.getMedianValue(row, column);
             if (xMedian != null) {
                 double xxMedian = rangeAxis.valueToJava2D(xMedian.doubleValue(),
@@ -751,8 +727,30 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
                 addItemEntity(entities, dataset, row, column, box);
             }
         }
+	}
 
-    }
+	protected void drawHorizontalItem_refactoring(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea,
+			ValueAxis rangeAxis, int row, int column, BoxAndWhiskerCategoryDataset bawDataset, double yy,
+			RectangleEdge location) {
+		double aRadius;
+		if (this.meanVisible) {
+            Number xMean = bawDataset.getMeanValue(row, column);
+            if (xMean != null) {
+                double xxMean = rangeAxis.valueToJava2D(xMean.doubleValue(),
+                        dataArea, location);
+                aRadius = state.getBarWidth() / 4;
+                // here we check that the average marker will in fact be
+                // visible before drawing it...
+                if ((xxMean > (dataArea.getMinX() - aRadius))
+                        && (xxMean < (dataArea.getMaxX() + aRadius))) {
+                    Ellipse2D.Double avgEllipse = new Ellipse2D.Double(xxMean
+                            - aRadius, yy + aRadius, aRadius * 2, aRadius * 2);
+                    g2.fill(avgEllipse);
+                    g2.draw(avgEllipse);
+                }
+            }
+        }
+	}
 
     /**
      * Draws the visual representation of a single data item when the plot has
@@ -1070,10 +1068,10 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         if (this.medianVisible != that.medianVisible) {
             return false;
         }
-        if (this.minOutlierVisible != that.minOutlierVisible) {
+        if (this.boxAndWhiskerRenderer_refactoring.getMinOutlierVisible() != that.boxAndWhiskerRenderer_refactoring.getMinOutlierVisible()) {
             return false;
         }
-        if (this.maxOutlierVisible != that.maxOutlierVisible) {
+        if (this.boxAndWhiskerRenderer_refactoring.getMaxOutlierVisible() != that.boxAndWhiskerRenderer_refactoring.getMaxOutlierVisible()) {
             return false;
         }
         if (this.useOutlinePaintForWhiskers
@@ -1114,5 +1112,12 @@ public class BoxAndWhiskerRenderer extends AbstractCategoryItemRenderer
         stream.defaultReadObject();
         this.artifactPaint = SerialUtils.readPaint(stream);
     }
+
+	public Object clone() throws java.lang.CloneNotSupportedException {
+		BoxAndWhiskerRenderer clone = (BoxAndWhiskerRenderer) super.clone();
+		clone.boxAndWhiskerRenderer_refactoring = (BoxAndWhiskerRenderer_refactoring) this.boxAndWhiskerRenderer_refactoring
+				.clone();
+		return clone;
+	}
 
 }

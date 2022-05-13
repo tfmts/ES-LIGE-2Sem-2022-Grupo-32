@@ -397,30 +397,9 @@ public class ScatterRenderer extends AbstractCategoryItemRenderer
         }
         int valueCount = values.size();
         for (int i = 0; i < valueCount; i++) {
-            // current data point...
-            double x1;
-            if (this.useSeriesOffset) {
-                x1 = domainAxis.getCategorySeriesMiddle(column, 
-                        dataset.getColumnCount(), visibleRow, visibleRowCount,
-                        this.itemMargin, dataArea, plot.getDomainAxisEdge());
-            }
-            else {
-                x1 = domainAxis.getCategoryMiddle(column, getColumnCount(),
-                        dataArea, plot.getDomainAxisEdge());
-            }
-            Number n = (Number) values.get(i);
-            double value = n.doubleValue();
-            double y1 = rangeAxis.valueToJava2D(value, dataArea,
-                    plot.getRangeAxisEdge());
-
-            Shape shape = getItemShape(row, column);
-            if (orientation == PlotOrientation.HORIZONTAL) {
-                shape = ShapeUtils.createTranslatedShape(shape, y1, x1);
-            }
-            else if (orientation == PlotOrientation.VERTICAL) {
-                shape = ShapeUtils.createTranslatedShape(shape, x1, y1);
-            }
-            if (getItemShapeFilled(row, column)) {
+            Shape shape = drawItem_refactoring(dataArea, plot, domainAxis, rangeAxis, dataset, row, column, visibleRow,
+					visibleRowCount, orientation, values, i);
+			if (getItemShapeFilled(row, column)) {
                 if (this.useFillPaint) {
                     g2.setPaint(getItemFillPaint(row, column));
                 }
@@ -442,6 +421,28 @@ public class ScatterRenderer extends AbstractCategoryItemRenderer
         }
 
     }
+
+	private Shape drawItem_refactoring(Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,
+			ValueAxis rangeAxis, CategoryDataset dataset, int row, int column, int visibleRow, int visibleRowCount,
+			PlotOrientation orientation, List values, int i) {
+		double x1;
+		if (this.useSeriesOffset) {
+			x1 = domainAxis.getCategorySeriesMiddle(column, dataset.getColumnCount(), visibleRow, visibleRowCount,
+					this.itemMargin, dataArea, plot.getDomainAxisEdge());
+		} else {
+			x1 = domainAxis.getCategoryMiddle(column, getColumnCount(), dataArea, plot.getDomainAxisEdge());
+		}
+		Number n = (Number) values.get(i);
+		double value = n.doubleValue();
+		double y1 = rangeAxis.valueToJava2D(value, dataArea, plot.getRangeAxisEdge());
+		Shape shape = getItemShape(row, column);
+		if (orientation == PlotOrientation.HORIZONTAL) {
+			shape = ShapeUtils.createTranslatedShape(shape, y1, x1);
+		} else if (orientation == PlotOrientation.VERTICAL) {
+			shape = ShapeUtils.createTranslatedShape(shape, x1, y1);
+		}
+		return shape;
+	}
 
     /**
      * Returns a legend item for a series.
