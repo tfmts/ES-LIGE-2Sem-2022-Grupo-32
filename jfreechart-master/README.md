@@ -1,6 +1,19 @@
 JFreeChart
 ==========
 
+Grupo 32
+
+Membros do grupo:
+- Ana Rita Vieira, 90248
+- Carolina Reis, 92821
+- Diogo Moreira, 93078
+- Filipa Gonçalves, 93031
+- Marta Tavares, 93301
+- Tiago Tavares, 92454
+
+O refactoring de Data Classes não foi concretizado com sucesso, uma vez que a equipa só descobriu duas e ambas estavam a ser invocadas apenas em classes de teste.
+
+==========
 Version 2.0.0, not yet released.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jfree/jfreechart/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jfree/jfreechart)
